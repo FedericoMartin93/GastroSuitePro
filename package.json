@@ -1,0 +1,21 @@
+{
+  "name": "gastro-suite-pro",
+  "version": "1.0.0",
+  "description": "Suite integral gastronómica: Escandallos, Control de Almacén, Cuadrantes de Turnos, Prime Cost y Seguridad por PIN.",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "open": "start index.html"
+  },
+  "keywords": [
+    "restauracion",
+    "escandallos",
+    "recetas",
+    "horarios",
+    "turnos",
+    "prime-cost",
+    "chef-manager"
+  ],
+  "author": "GastroSuitePro",
+  "license": "MIT"
+}
