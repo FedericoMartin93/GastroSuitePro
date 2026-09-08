@@ -11,6 +11,7 @@
     
     <!-- Firebase Web SDK (v10 compat: App, Firestore, Realtime Database) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     
@@ -37,6 +38,120 @@
             --radius: 12px;
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.08);
+
+            
+        /* ==========================================================================
+           AUTHENTICATION & ACCESS CONTROL STYLES
+           ========================================================================== */
+        #loginScreenOverlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, #090d16 0%, #0f172a 50%, #1e1b4b 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            padding: 16px;
+            backdrop-filter: blur(12px);
+        }
+
+        .login-card {
+            background: rgba(30, 41, 59, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 440px;
+            padding: 36px 30px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            text-align: center;
+            color: #f8fafc;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .login-logo {
+            width: 68px;
+            height: 68px;
+            margin: 0 auto 16px auto;
+            background: linear-gradient(135deg, var(--accent), #9333ea);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.45);
+        }
+
+        .btn-google {
+            background: #ffffff;
+            color: #1f2937;
+            border: 1px solid #e5e7eb;
+            width: 100%;
+            height: 48px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        .btn-google:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+            background: #f9fafb;
+        }
+
+        .login-divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 20px 0;
+            color: #64748b;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .login-divider::before, .login-divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .login-divider::before { margin-right: 10px; }
+        .login-divider::after { margin-left: 10px; }
+
+        .auth-error-alert {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid #ef4444;
+            color: #fca5a5;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+            display: none;
+            text-align: left;
+            line-height: 1.4;
+        }
+
+        /* Read Only Mode Guard */
+        body.read-only-mode .hide-read-only {
+            display: none !important;
+        }
+        body.read-only-mode input:not(.allow-read-only),
+        body.read-only-mode textarea:not(.allow-read-only) {
+            pointer-events: none !important;
+            opacity: 0.85;
+            user-select: text;
+        }
+        body.read-only-mode select:not(.allow-read-only) {
+            pointer-events: none !important;
+            opacity: 0.85;
+        }
+        body.read-only-mode .drag-handle {
+            display: none !important;
+        }
 
             /* Shift & Schedule colors */
             --vacation: #0284c7;
@@ -602,6 +717,74 @@
 <!-- ==========================================================================
      PIN LOCK SCREEN OVERLAY (AUTHENTICATION)
      ========================================================================== -->
+
+<!-- ==========================================================================
+     FIREBASE AUTHENTICATION & LOGIN OVERLAY
+     ========================================================================== -->
+<div id="loginScreenOverlay">
+    <div class="login-card">
+        <div class="login-logo">🍳</div>
+        <h2 style="margin: 0 0 6px 0; font-weight:800; font-size:1.6rem; letter-spacing:-0.5px;">GastroSuitePro</h2>
+        <p style="color:#94a3b8; font-size:0.9rem; margin:0 0 22px 0;">Acceso Seguro y Confidencial de Restauración</p>
+
+        <div id="authErrorAlert" class="auth-error-alert"></div>
+
+        <!-- Google Sign-in (Recommended) -->
+        <button class="btn-google" onclick="authManager.loginWithGoogle()" id="btnGoogleLogin">
+            <svg width="20" height="20" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            Continuar con Google
+        </button>
+
+        <div class="login-divider">o con correo autorizado</div>
+
+        <!-- Email & Password Form -->
+        <div style="display:flex; flex-direction:column; gap:10px; text-align:left;">
+            <div>
+                <label style="font-size:0.75rem; color:#94a3b8; font-weight:600;">Correo Electrónico:</label>
+                <input type="email" id="authEmailInput" placeholder="fefomartin00@gmail.com" style="margin:4px 0 0 0; background:#0f172a; border-color:#334155; color:white;">
+            </div>
+            <div>
+                <label style="font-size:0.75rem; color:#94a3b8; font-weight:600;">Contraseña:</label>
+                <input type="password" id="authPasswordInput" placeholder="••••••••" style="margin:4px 0 0 0; background:#0f172a; border-color:#334155; color:white;">
+            </div>
+            
+            <div style="display:flex; gap:8px; margin-top:6px;">
+                <button class="btn-primary" onclick="authManager.loginWithEmail()" style="flex:1; height:44px; font-weight:700;">
+                    Iniciar Sesión
+                </button>
+                <button class="btn-secondary" onclick="authManager.registerWithEmail()" style="height:44px;" title="Registrar contraseña para este correo">
+                    Crear Clave
+                </button>
+            </div>
+        </div>
+
+        <!-- Guest / Visitor Access Option -->
+        <div style="margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.08);">
+            <button class="btn-ghost" onclick="authManager.openGuestPinModal()" style="color:#94a3b8; font-size:0.85rem; padding:4px 8px;">
+                🔑 ¿Tienes una clave de invitado / visitante?
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- GUEST PIN PROMPT MODAL -->
+<div id="guestPinModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); z-index:10001; align-items:center; justify-content:center; padding:16px;">
+    <div style="background:#1e293b; border:1px solid #334155; border-radius:16px; max-width:380px; width:100%; padding:24px; text-align:center; color:white;">
+        <h3 style="margin-top:0;">Acceso como Visitante</h3>
+        <p style="font-size:0.85rem; color:#94a3b8;">Introduce el código de acceso proporcionado por el administrador para consultar la aplicación en modo Solo Lectura.</p>
+        <input type="password" id="guestPinInput" placeholder="Código de invitado..." style="text-align:center; font-size:1.2rem; letter-spacing:2px; font-weight:bold; margin-bottom:14px; background:#0f172a; border-color:#334155; color:white;">
+        <div style="display:flex; gap:8px;">
+            <button class="btn-primary" onclick="authManager.submitGuestPin()" style="flex:1;">Entrar</button>
+            <button class="btn-secondary" onclick="closeModal('guestPinModal')">Cancelar</button>
+        </div>
+    </div>
+</div>
+
 <div id="lockScreenOverlay">
     <div class="pin-card" id="pinCard">
         <div class="pin-logo-box">🛡️</div>
@@ -684,8 +867,15 @@
         <button class="btn-secondary icon-btn" onclick="auth.openChangePinModal()" title="Cambiar PIN">
             ⚙️ PIN
         </button>
+        <span id="userRoleBadge" style="display:none; font-size:0.75rem; font-weight:700; padding:4px 8px; border-radius:6px; margin-right:4px;"></span>
+        <button class="btn-primary icon-btn" id="btnAdminAccess" onclick="authManager.openAdminModal()" title="Panel de Administración y Accesos" style="display:none; background:#7c3aed;">
+            👑 Admin
+        </button>
         <button class="btn-danger icon-btn" onclick="auth.lock()" title="Bloquear Terminal">
             🔒 Bloquear
+        </button>
+        <button class="btn-ghost icon-btn" id="btnLogoutHeader" onclick="authManager.logout()" title="Cerrar Sesión">
+            🚪 Salir
         </button>
     </div>
 </header>
@@ -781,8 +971,8 @@
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                         <h3 style="margin:0;">🥕 Almacén</h3>
                         <div style="display:flex; gap:4px;">
-                            <button class="btn-warning icon-btn" onclick="openQuickEdit()" title="Edición masiva de precios">⚡ Precios</button>
-                            <button class="btn-secondary icon-btn" onclick="openSuppliersModal()">🚛 Prov.</button>
+                            <button class="btn-warning icon-btn hide-read-only" onclick="openQuickEdit()" title="Edición masiva de precios">⚡ Precios</button>
+                            <button class="btn-secondary icon-btn hide-read-only" onclick="openSuppliersModal()">🚛 Prov.</button>
                         </div>
                     </div>
 
@@ -824,7 +1014,7 @@
                         <div class="allergen-grid" id="pantryAllergenSelector" style="padding:4px; margin-bottom:10px; background:transparent; border:none; gap:4px;"></div>
 
                         <div style="display:flex; gap:6px;">
-                            <button id="btnPantryAction" class="btn-primary" onclick="handlePantryAction()" style="flex:1;">+ Añadir</button>
+                            <button id="btnPantryAction" class="btn-primary hide-read-only" class="btn-primary" onclick="handlePantryAction()" style="flex:1;">+ Añadir</button>
                             <button id="btnPantryCancel" class="btn-secondary" onclick="cancelPantryEdit()" style="display:none;">✕</button>
                         </div>
                     </div>
@@ -839,7 +1029,7 @@
                         <h3 style="margin:0;">🍽️ Fichas y Recetas</h3>
                         <button class="btn-secondary icon-btn" onclick="openBCG()" title="Matriz BCG">🧠 BCG</button>
                     </div>
-                    <button class="btn-primary" onclick="newRecipe()" style="width:100%; margin-bottom:10px;">+ Nueva Receta</button>
+                    <button class="btn-primary hide-read-only" onclick="newRecipe()" style="width:100%; margin-bottom:10px;">+ Nueva Receta</button>
                     <input type="text" id="searchRecipe" placeholder="🔍 Buscar plato..." oninput="filterRecipes()">
                     <div id="recipeList" style="max-height:260px; overflow-y:auto;"></div>
                 </div>
@@ -1463,6 +1653,63 @@
     </div>
 </div>
 
+
+<!-- ==========================================================================
+     ADMIN ACCESS MANAGEMENT MODAL (PROPIETARIO)
+     ========================================================================== -->
+<div id="adminAccessModal" class="modal-overlay" style="display:none; z-index:9999;">
+    <div class="modal-content" style="max-width:560px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h2 style="margin:0; display:flex; align-items:center; gap:8px;">👑 Control de Accesos y Visitantes</h2>
+            <button class="icon-btn btn-secondary" onclick="closeModal('adminAccessModal')">✕</button>
+        </div>
+
+        <div style="background:var(--surface-subtle); border-radius:10px; padding:14px; margin-bottom:18px; border:1px solid var(--border);">
+            <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:4px;">Propietario / SuperAdmin:</div>
+            <div style="font-size:1.05rem; font-weight:800; color:var(--success); display:flex; align-items:center; gap:6px;">
+                ✅ <span id="adminOwnerEmailDisplay">fefomartin00@gmail.com</span>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">
+                Tienes permisos exclusivos de lectura, escritura, edición de finanzas y gestión de invitados.
+            </div>
+        </div>
+
+        <!-- WHITELISTED GUEST EMAILS -->
+        <h3 style="margin:0 0 8px 0; font-size:1rem;">👥 Correos Autorizados (Modo Solo Lectura)</h3>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 10px 0;">
+            Los usuarios con estos correos podrán iniciar sesión con Google o clave, pero no podrán modificar ni borrar ningún dato.
+        </p>
+
+        <div style="display:flex; gap:6px; margin-bottom:12px;">
+            <input type="email" id="newGuestEmailInput" placeholder="correo.invitado@gmail.com" style="margin:0; flex:1;">
+            <button class="btn-primary" onclick="authManager.addGuestEmail()">+ Autorizar</button>
+        </div>
+
+        <div id="guestEmailsList" style="max-height:160px; overflow-y:auto; border:1px solid var(--border); border-radius:8px; padding:8px; margin-bottom:18px; background:var(--surface);">
+            <!-- Dynamic guest email items -->
+        </div>
+
+        <!-- TEMPORARY GUEST PIN -->
+        <h3 style="margin:0 0 8px 0; font-size:1rem;">🔑 Clave Rápida de Visitante Temporal</h3>
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+            <input type="checkbox" id="guestPinEnabledCheck" onchange="authManager.toggleGuestPinEnabled()">
+            <label for="guestPinEnabledCheck" style="margin:0; font-size:0.9rem; font-weight:600; cursor:pointer;">
+                Permitir acceso mediante código de invitado
+            </label>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center; margin-bottom:16px;">
+            <input type="text" id="guestPinConfigInput" placeholder="Ej: 2026" style="width:140px; margin:0; font-weight:bold; letter-spacing:1px; text-align:center;">
+            <button class="btn-secondary" onclick="authManager.saveGuestPin()">Actualizar Clave</button>
+            <button class="btn-ghost" onclick="authManager.copyGuestLink()" title="Copiar enlace de acceso directo para visitantes">📋 Copiar Link de Visita</button>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border); padding-top:15px; margin-top:10px;">
+            <button class="btn-danger" onclick="authManager.logout()">🚪 Cerrar Sesión</button>
+            <button class="btn-secondary" onclick="closeModal('adminAccessModal')">Cerrar</button>
+        </div>
+    </div>
+</div>
+
 <!-- HIDDEN PRINT CONTAINERS -->
 <div id="signatureSheetContainer" class="print-only"></div>
 <div id="ticketContainer" class="print-only"></div>
@@ -1494,6 +1741,303 @@ const appNav = {
             document.getElementById('tabNavSchedule').classList.add('active');
             app.renderTable();
         }
+    }
+};
+
+
+/* ==========================================================================
+   AUTHENTICATION, OWNER & VISITOR ACCESS ENGINE
+   ========================================================================== */
+const authManager = {
+    OWNER_EMAIL: "fefomartin00@gmail.com",
+    currentUser: null,
+    currentRole: null, // 'owner' | 'visitor' | null
+    accessConfig: {
+        guestEmails: [],
+        guestPinEnabled: true,
+        guestPin: "2026"
+    },
+
+    init() {
+        this.loadAccessConfig();
+        this.checkUrlGuestParam();
+
+        if (typeof firebase !== 'undefined' && firebase.auth) {
+            firebase.auth().onAuthStateChanged(async (user) => {
+                if (user) {
+                    await this.handleUserAuthenticated(user);
+                } else {
+                    const guestSession = sessionStorage.getItem('gastro_guest_session');
+                    if (guestSession === 'active') {
+                        this.setRole('visitor', 'Invitado');
+                    } else {
+                        this.showLoginScreen();
+                    }
+                }
+            });
+        }
+    },
+
+    loadAccessConfig() {
+        const saved = localStorage.getItem('gastro_access_config');
+        if (saved) {
+            try { this.accessConfig = { ...this.accessConfig, ...JSON.parse(saved) }; } catch (e) {}
+        }
+    },
+
+    saveAccessConfig() {
+        localStorage.setItem('gastro_access_config', JSON.stringify(this.accessConfig));
+        if (typeof firebaseSync !== 'undefined' && firebaseSync.isConnected && firebaseSync.db) {
+            try {
+                if (firebaseSync.dbType === 'firestore') {
+                    firebaseSync.db.collection('gastro_master').doc('access_rules').set(this.accessConfig);
+                }
+            } catch (e) {}
+        }
+    },
+
+    checkUrlGuestParam() {
+        const params = new URLSearchParams(window.location.search);
+        const gPin = params.get('guest');
+        if (gPin && this.accessConfig.guestPinEnabled && gPin === this.accessConfig.guestPin) {
+            sessionStorage.setItem('gastro_guest_session', 'active');
+            this.setRole('visitor', 'Visitante (Enlace)');
+        }
+    },
+
+    showLoginScreen() {
+        document.getElementById('loginScreenOverlay').style.display = 'flex';
+        document.getElementById('lockScreenOverlay').style.display = 'none';
+        this.currentUser = null;
+        this.currentRole = null;
+        this.applyPermissions();
+    },
+
+    hideLoginScreen() {
+        document.getElementById('loginScreenOverlay').style.display = 'none';
+    },
+
+    async handleUserAuthenticated(user) {
+        const email = (user.email || '').toLowerCase().trim();
+        const isOwner = (email === this.OWNER_EMAIL.toLowerCase());
+        const isWhitelisted = this.accessConfig.guestEmails.some(e => e.toLowerCase().trim() === email);
+
+        if (isOwner) {
+            this.currentUser = user;
+            this.setRole('owner', user.displayName || user.email);
+            showToast("👑 Bienvenido, Propietario (" + email + ")", "success");
+        } else if (isWhitelisted) {
+            this.currentUser = user;
+            this.setRole('visitor', user.displayName || user.email);
+            showToast("👁️ Acceso concedido en Modo Visitante (Solo Lectura)", "info");
+        } else {
+            // Cuenta NO autorizada
+            const alertBox = document.getElementById('authErrorAlert');
+            if (alertBox) {
+                alertBox.innerHTML = "<strong>⛔ Acceso Denegado:</strong> La cuenta <code>" + email + "</code> no tiene permisos para acceder a GastroSuitePro. Solo el propietario (" + this.OWNER_EMAIL + ") o correos expresamente autorizados pueden acceder.";
+                alertBox.style.display = 'block';
+            }
+            await firebase.auth().signOut();
+            this.showLoginScreen();
+        }
+    },
+
+    setRole(role, displayName) {
+        this.currentRole = role;
+        this.hideLoginScreen();
+        this.applyPermissions(displayName);
+
+        // Si ya hay un PIN local configurado, lo solicita para la sesión de terminal
+        const hasLocalPin = localStorage.getItem('gastro_pin_hash');
+        if (hasLocalPin && role === 'owner') {
+            // Listo para operar
+        }
+    },
+
+    applyPermissions(displayName) {
+        const roleBadge = document.getElementById('userRoleBadge');
+        const adminBtn = document.getElementById('btnAdminAccess');
+
+        if (this.currentRole === 'owner') {
+            document.body.classList.remove('read-only-mode');
+            if (roleBadge) {
+                roleBadge.innerText = '👑 ' + (displayName || 'PROPIETARIO');
+                roleBadge.style.background = '#065f46';
+                roleBadge.style.color = '#a7f3d0';
+                roleBadge.style.display = 'inline-block';
+            }
+            if (adminBtn) adminBtn.style.display = 'inline-flex';
+        } else if (this.currentRole === 'visitor') {
+            document.body.classList.add('read-only-mode');
+            if (roleBadge) {
+                roleBadge.innerText = '👁️ SOLO LECTURA (' + (displayName || 'Invitado') + ')';
+                roleBadge.style.background = '#1e1b4b';
+                roleBadge.style.color = '#c7d2fe';
+                roleBadge.style.display = 'inline-block';
+            }
+            if (adminBtn) adminBtn.style.display = 'none';
+        } else {
+            document.body.classList.remove('read-only-mode');
+            if (roleBadge) roleBadge.style.display = 'none';
+            if (adminBtn) adminBtn.style.display = 'none';
+        }
+    },
+
+    async loginWithGoogle() {
+        if (typeof firebase === 'undefined' || !firebase.auth) {
+            return showToast("Firebase Auth no está listo", "error");
+        }
+        document.getElementById('authErrorAlert').style.display = 'none';
+        try {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            await firebase.auth().signInWithPopup(provider);
+        } catch (err) {
+            console.error("Google Auth error:", err);
+            const alertBox = document.getElementById('authErrorAlert');
+            if (alertBox) {
+                alertBox.innerText = "Error al conectar con Google: " + err.message;
+                alertBox.style.display = 'block';
+            }
+        }
+    },
+
+    async loginWithEmail() {
+        const email = document.getElementById('authEmailInput').value.trim();
+        const pass = document.getElementById('authPasswordInput').value;
+        if (!email || !pass) return showToast("Introduce correo y contraseña", "warning");
+
+        document.getElementById('authErrorAlert').style.display = 'none';
+        try {
+            await firebase.auth().signInWithEmailAndPassword(email, pass);
+        } catch (err) {
+            const alertBox = document.getElementById('authErrorAlert');
+            if (alertBox) {
+                alertBox.innerText = "Error de inicio de sesión: " + err.message;
+                alertBox.style.display = 'block';
+            }
+        }
+    },
+
+    async registerWithEmail() {
+        const email = document.getElementById('authEmailInput').value.trim();
+        const pass = document.getElementById('authPasswordInput').value;
+        if (!email || !pass || pass.length < 6) {
+            return showToast("Introduce un correo y una contraseña de al menos 6 caracteres", "warning");
+        }
+
+        if (email.toLowerCase() !== this.OWNER_EMAIL.toLowerCase()) {
+            return showToast("Solo el propietario (" + this.OWNER_EMAIL + ") puede registrar clave maestra.", "error");
+        }
+
+        try {
+            await firebase.auth().createUserWithEmailAndPassword(email, pass);
+            showToast("Clave creada con éxito");
+        } catch (err) {
+            if (err.code === 'auth/email-already-in-use') {
+                showToast("Ese correo ya está registrado. Pulsa 'Iniciar Sesión'", "info");
+            } else {
+                showToast("Error al crear clave: " + err.message, "error");
+            }
+        }
+    },
+
+    openGuestPinModal() {
+        document.getElementById('guestPinInput').value = '';
+        document.getElementById('guestPinModal').style.display = 'flex';
+    },
+
+    submitGuestPin() {
+        const pin = document.getElementById('guestPinInput').value.trim();
+        if (!this.accessConfig.guestPinEnabled) {
+            return showToast("El acceso con clave de invitado está desactivado por el administrador.", "error");
+        }
+        if (pin === this.accessConfig.guestPin) {
+            sessionStorage.setItem('gastro_guest_session', 'active');
+            closeModal('guestPinModal');
+            this.setRole('visitor', 'Invitado');
+            showToast("Acceso como Invitado concedido (Solo Lectura)");
+        } else {
+            showToast("Código de invitado incorrecto", "error");
+        }
+    },
+
+    async logout() {
+        sessionStorage.removeItem('gastro_guest_session');
+        if (typeof firebase !== 'undefined' && firebase.auth) {
+            await firebase.auth().signOut();
+        }
+        closeModal('adminAccessModal');
+        this.showLoginScreen();
+        showToast("Sesión cerrada");
+    },
+
+    openAdminModal() {
+        if (this.currentRole !== 'owner') return;
+        document.getElementById('guestPinEnabledCheck').checked = !!this.accessConfig.guestPinEnabled;
+        document.getElementById('guestPinConfigInput').value = this.accessConfig.guestPin || '2026';
+        this.renderGuestEmailsList();
+        document.getElementById('adminAccessModal').style.display = 'flex';
+    },
+
+    renderGuestEmailsList() {
+        const container = document.getElementById('guestEmailsList');
+        if (!container) return;
+        if (!this.accessConfig.guestEmails.length) {
+            container.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; padding:6px;">No hay correos de invitados autorizados.</div>';
+            return;
+        }
+        container.innerHTML = this.accessConfig.guestEmails.map((email, idx) => `
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 8px; border-bottom:1px solid var(--border); font-size:0.85rem;">
+                <span>📧 ${email}</span>
+                <button class="icon-btn btn-danger" onclick="authManager.removeGuestEmail(${idx})" title="Eliminar permiso">✕</button>
+            </div>
+        `).join('');
+    },
+
+    addGuestEmail() {
+        const input = document.getElementById('newGuestEmailInput');
+        const email = input.value.trim().toLowerCase();
+        if (!email || !email.includes('@')) return showToast("Introduce un correo válido", "error");
+        if (email === this.OWNER_EMAIL.toLowerCase()) return showToast("Este es el correo del propietario", "warning");
+
+        if (!this.accessConfig.guestEmails.includes(email)) {
+            this.accessConfig.guestEmails.push(email);
+            this.saveAccessConfig();
+            this.renderGuestEmailsList();
+            input.value = '';
+            showToast("Invitado autorizado con éxito");
+        } else {
+            showToast("Este correo ya estaba en la lista", "info");
+        }
+    },
+
+    removeGuestEmail(idx) {
+        this.accessConfig.guestEmails.splice(idx, 1);
+        this.saveAccessConfig();
+        this.renderGuestEmailsList();
+        showToast("Invitado revocado", "warning");
+    },
+
+    toggleGuestPinEnabled() {
+        this.accessConfig.guestPinEnabled = document.getElementById('guestPinEnabledCheck').checked;
+        this.saveAccessConfig();
+        showToast(this.accessConfig.guestPinEnabled ? "Clave de invitado activada" : "Clave de invitado desactivada");
+    },
+
+    saveGuestPin() {
+        const pin = document.getElementById('guestPinConfigInput').value.trim();
+        if (!pin) return showToast("La clave no puede estar vacía", "error");
+        this.accessConfig.guestPin = pin;
+        this.saveAccessConfig();
+        showToast("Clave de invitado actualizada a: " + pin, "success");
+    },
+
+    copyGuestLink() {
+        const pin = this.accessConfig.guestPin || '2026';
+        const url = window.location.origin + window.location.pathname + '?guest=' + encodeURIComponent(pin);
+        navigator.clipboard.writeText(url).then(() => {
+            showToast("📋 Enlace de invitado copiado al portapapeles");
+        });
     }
 };
 
@@ -4207,6 +4751,7 @@ async function initApp() {
 
     // 4. Inicializar Auth (PIN)
     await auth.init();
+    if (typeof authManager !== "undefined") authManager.init();
 
     // 5. Inicializar Firebase (si está configurado)
     if (typeof firebaseSync !== 'undefined') {
