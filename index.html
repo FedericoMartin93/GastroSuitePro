@@ -1537,21 +1537,20 @@
                     Buzón integrado con <strong>lino.brasserie@gmail.com</strong>. Consulta todos tus correos, pedidos de proveedores, reservas de comensales y escanea albaranes directamente a los escandallos.
                 </p>
             </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;" id="inboxHeaderAccountControls">
                 <button class="btn-primary" onclick="inboxModule.openComposeModal()" id="btnInboxComposeNew" style="background:#ea4335; border:none; display:flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(234,67,53,0.3); font-weight:700;">
-                    <span>✏️</span> <strong>Redactar Correo</strong>
+                    <span>✏️</span> <strong>Redactar</strong>
                 </button>
-                <button class="btn-primary" onclick="inboxModule.connectGmailLive()" id="btnInboxLiveSync" style="background:#10b981; border:none; display:flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(16,185,129,0.3);">
-                    <span id="inboxSyncDot">🟢</span> <strong id="inboxSyncBtnText">Sincronizar Gmail en Vivo</strong>
-                </button>
+
+                <!-- DYNAMIC ACCOUNT STATUS & CONNECT BUTTON -->
+                <div id="inboxHeaderAccountPill" style="display:flex; align-items:center; gap:8px;">
+                    <button class="btn-primary" onclick="inboxModule.connectAnyGoogleAccount()" id="btnInboxConnectMain" style="background:#10b981; border:none; display:flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(16,185,129,0.3); font-weight:700;">
+                        <span>🟢</span> <strong>Conectar con Google / Gmail</strong>
+                    </button>
+                </div>
+
                 <button class="btn-secondary" onclick="inboxModule.refresh()" title="Actualizar correos" style="display:flex; align-items:center; gap:6px;">
                     <span>🔄</span> <strong>Refrescar</strong>
-                </button>
-                <button class="btn-secondary" onclick="openModal('googleClientConfigModal')" title="Configurar conexión con Google" style="display:flex; align-items:center; gap:6px;">
-                    <span>⚙️</span> <strong>Ajustes OAuth</strong>
-                </button>
-                <button class="btn-ghost" onclick="gmailSyncModule.openDirectGmailSearch()" style="color:#ea4335;" title="Abrir en Gmail Oficial">
-                    🔗 Gmail Web
                 </button>
             </div>
         </div>
@@ -1561,13 +1560,13 @@
             <!-- COL 1: FOLDERS / SMART CATEGORIES -->
             <div class="inbox-folders-col">
                 <!-- ACCOUNT BADGE -->
-                <div class="inbox-account-card">
-                    <div style="width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg, #ea4335, #fbbc05); color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:0.9rem;">
-                        LB
+                <div class="inbox-account-card" id="inboxSidebarAccountCard">
+                    <div style="width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg, #ea4335, #fbbc05); color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:0.9rem;" id="inboxSidebarAvatar">
+                        ?
                     </div>
                     <div style="overflow:hidden; flex:1;">
-                        <strong style="font-size:0.82rem; color:var(--text-main); display:block; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">Lino Brasserie</strong>
-                        <span style="font-size:0.7rem; color:var(--text-muted); display:block; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">lino.brasserie@gmail.com</span>
+                        <strong style="font-size:0.82rem; color:var(--text-main); display:block; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;" id="inboxSidebarAccountName">Sin conectar</strong>
+                        <span style="font-size:0.7rem; color:var(--text-muted); display:block; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;" id="inboxSidebarAccountEmail">Pulsa en Conectar</span>
                     </div>
                 </div>
 
@@ -3474,26 +3473,15 @@ const authManager = {
 
     async handleUserAuthenticated(user) {
         const email = (user.email || '').toLowerCase().trim();
-        const isOwner = (email === this.OWNER_EMAIL.toLowerCase() || email === 'lino.brasserie@gmail.com');
-        const isWhitelisted = this.accessConfig.guestEmails.some(e => e.toLowerCase().trim() === email);
+        this.currentUser = user;
 
-        if (isOwner) {
-            this.currentUser = user;
-            this.setRole('owner', user.displayName || user.email);
-            showToast("👑 Bienvenido, Propietario (" + email + ")", "success");
-        } else if (isWhitelisted) {
-            this.currentUser = user;
-            this.setRole('visitor', user.displayName || user.email);
-            showToast("👁️ Acceso concedido en Modo Visitante (Solo Lectura)", "info");
-        } else {
-            // Cuenta NO autorizada
-            const alertBox = document.getElementById('authErrorAlert');
-            if (alertBox) {
-                alertBox.innerHTML = "<strong>⛔ Acceso Denegado:</strong> La cuenta <code>" + email + "</code> no tiene permisos para acceder a GastroSuitePro. Solo el propietario (" + this.OWNER_EMAIL + ") o correos expresamente autorizados pueden acceder.";
-                alertBox.style.display = 'block';
-            }
-            await firebase.auth().signOut();
-            this.showLoginScreen();
+        // Acceso universal: cualquier cuenta de Google autenticada es bienvenida con rol operativo completo
+        this.setRole('owner', user.displayName || user.email);
+        showToast("👑 Sesión iniciada: " + email, "success");
+
+        // Notificar y vincular cuenta en el módulo de Gmail
+        if (window.inboxModule && typeof inboxModule.onUserLoggedIn === 'function') {
+            inboxModule.onUserLoggedIn(user);
         }
     },
 
@@ -8004,8 +7992,11 @@ const gmailSyncModule = {
     },
 
     openDirectGmailSearch() {
-        const query = encodeURIComponent('has:attachment (factura OR albaran OR albarán OR entrega)');
-        window.open('https://mail.google.com/mail/u/?authuser=lino.brasserie@gmail.com#search/' + query, '_blank');
+        if (window.inboxModule && typeof inboxModule.connectAnyGoogleAccount === 'function') {
+            inboxModule.connectAnyGoogleAccount();
+        } else {
+            showToast("Conecta tu cuenta de Google en la pestaña de Correo", "info");
+        }
     },
 
     processEmailAttachment(emailId) {
@@ -8477,63 +8468,195 @@ const inboxModule = {
     searchQuery: '',
     quickType: 'all',
     isLoading: false,
-    emails: [], // ZERO MOCK DATA: populated solely by real Gmail API or persisted user cache
+    connectedEmail: null,
+    connectedDisplayName: null,
+    emails: [],
 
     init() {
-        // Check for cached real emails
-        try {
-            const cached = localStorage.getItem('gsp_real_emails_cache');
-            if (cached) {
-                this.emails = JSON.parse(cached);
-            }
-        } catch(e) {
-            console.warn("Could not read real email cache:", e);
-        }
+        // Recover connected account from session / local storage
+        this.connectedEmail = localStorage.getItem('gsp_active_gmail_account') || null;
+        this.connectedDisplayName = localStorage.getItem('gsp_active_gmail_name') || null;
 
-        // Check for stored OAuth access token
         const storedToken = sessionStorage.getItem('gsp_google_access_token') || localStorage.getItem('gsp_google_access_token');
         if (storedToken && window.googleServicesManager && googleServicesManager.gmail) {
             googleServicesManager.gmail.accessToken = storedToken;
             googleServicesManager.gmail.isConnected = true;
         }
 
+        // Recover cached real emails for this account
+        try {
+            const cached = localStorage.getItem('gsp_real_emails_' + (this.connectedEmail || 'default'));
+            if (cached) {
+                this.emails = JSON.parse(cached);
+            }
+        } catch(e) {
+            console.warn("Could not read email cache:", e);
+        }
+
+        this.updateAccountDisplayUI();
         this.updateBadgeCounts();
         this.render();
 
-        // Auto-fetch if token is available
-        if (storedToken && this.emails.length === 0) {
+        // If authenticated and no emails in cache, trigger live fetch
+        if (googleServicesManager.gmail.accessToken && this.emails.length === 0) {
             this.syncWithGmailLive();
         }
     },
 
-    onGmailConnected() {
-        this.updateConnectionStatusUI();
+    // CALLED WHEN USER LOGS IN VIA GOOGLE AUTH IN THE MAIN SCREEN
+    onUserLoggedIn(user) {
+        if (!user) return;
+        const token = sessionStorage.getItem('gsp_google_access_token') || localStorage.getItem('gsp_google_access_token');
+        this.setConnectedAccount(user.email, user.displayName, token);
+    },
+
+    // CONNECT WITH ANY GOOGLE / GMAIL ACCOUNT VIA POPUP
+    async connectAnyGoogleAccount() {
+        showToast("Abriendo selector oficial de cuentas de Google...", "info");
+        try {
+            const auth = (window.authManager && authManager.ensureFirebase) ? authManager.ensureFirebase() : firebase.auth();
+            const provider = new firebase.auth.GoogleAuthProvider();
+            provider.addScope('https://www.googleapis.com/auth/gmail.modify');
+            provider.addScope('https://www.googleapis.com/auth/gmail.send');
+            provider.setCustomParameters({ prompt: 'select_account' });
+
+            const result = await auth.signInWithPopup(provider);
+            if (result && result.user) {
+                const email = result.user.email;
+                const displayName = result.user.displayName || email.split('@')[0];
+                const token = result.credential ? result.credential.accessToken : null;
+                
+                this.setConnectedAccount(email, displayName, token);
+                showToast("🟢 Conectado con éxito: " + email, "success");
+            }
+        } catch(err) {
+            console.error("Google connection error:", err);
+            if (err.code === 'auth/popup-closed-by-user') {
+                showToast("Ventana de conexión cerrada sin seleccionar cuenta.", "info");
+            } else if (err.code === 'auth/popup-blocked') {
+                showToast("Ventana emergente bloqueada por el navegador. Por favor permítela.", "warning");
+            } else {
+                showToast("Aviso al conectar con Google: " + err.message, "danger");
+            }
+        }
+    },
+
+    // SET CONNECTED ACCOUNT AND UPDATE UI
+    setConnectedAccount(email, displayName, token) {
+        if (!email) return;
+        this.connectedEmail = email.toLowerCase().trim();
+        this.connectedDisplayName = displayName || email.split('@')[0];
+
+        localStorage.setItem('gsp_active_gmail_account', this.connectedEmail);
+        localStorage.setItem('gsp_active_gmail_name', this.connectedDisplayName);
+
+        if (token) {
+            sessionStorage.setItem('gsp_google_access_token', token);
+            localStorage.setItem('gsp_google_access_token', token);
+            if (window.googleServicesManager && googleServicesManager.gmail) {
+                googleServicesManager.gmail.accessToken = token;
+                googleServicesManager.gmail.isConnected = true;
+            }
+        }
+
+        this.updateAccountDisplayUI();
         this.syncWithGmailLive();
     },
 
-    updateConnectionStatusUI() {
-        const isConnected = !!(googleServicesManager.gmail && googleServicesManager.gmail.accessToken);
-        const statusText = document.getElementById('googleAuthStatusText');
-        const badge = document.getElementById('googleAuthScopeBadge');
-        const syncDot = document.getElementById('inboxSyncDot');
-        const syncText = document.getElementById('inboxSyncBtnText');
+    // SWITCH GOOGLE ACCOUNT
+    async switchGoogleAccount() {
+        try {
+            if (typeof firebase !== 'undefined' && firebase.auth) {
+                await firebase.auth().signOut();
+            }
+        } catch(e) {}
 
-        if (isConnected) {
-            if (statusText) statusText.innerHTML = "🟢 Conectado con <strong>lino.brasserie@gmail.com</strong>";
-            if (badge) {
-                badge.innerText = "gmail.modify + gmail.send (Activo)";
-                badge.className = "f-badge f-badge-success";
+        sessionStorage.removeItem('gsp_google_access_token');
+        localStorage.removeItem('gsp_google_access_token');
+        if (googleServicesManager && googleServicesManager.gmail) {
+            googleServicesManager.gmail.accessToken = null;
+            googleServicesManager.gmail.isConnected = false;
+        }
+        this.emails = [];
+        this.activeEmailId = null;
+        this.render();
+
+        await this.connectAnyGoogleAccount();
+    },
+
+    // DISCONNECT ACCOUNT
+    async disconnectGoogleAccount() {
+        try {
+            if (typeof firebase !== 'undefined' && firebase.auth) {
+                await firebase.auth().signOut();
             }
-            if (syncDot) syncDot.innerText = "🟢";
-            if (syncText) syncText.innerText = "Bandeja Sincronizada";
-        } else {
-            if (statusText) statusText.innerHTML = "🔴 Desconectado de Gmail API";
-            if (badge) {
-                badge.innerText = "Sin token";
-                badge.className = "f-badge f-badge-info";
+        } catch(e) {}
+
+        sessionStorage.removeItem('gsp_google_access_token');
+        localStorage.removeItem('gsp_google_access_token');
+        localStorage.removeItem('gsp_active_gmail_account');
+        localStorage.removeItem('gsp_active_gmail_name');
+
+        this.connectedEmail = null;
+        this.connectedDisplayName = null;
+        if (googleServicesManager && googleServicesManager.gmail) {
+            googleServicesManager.gmail.accessToken = null;
+            googleServicesManager.gmail.isConnected = false;
+        }
+        this.emails = [];
+        this.activeEmailId = null;
+        this.updateAccountDisplayUI();
+        this.render();
+        showToast("Cuenta de Gmail desconectada.", "info");
+    },
+
+    // UPDATE ALL DOM ELEMENTS WITH CURRENT ACCOUNT INFO
+    updateAccountDisplayUI() {
+        const isConnected = !!(this.connectedEmail && googleServicesManager.gmail && googleServicesManager.gmail.accessToken);
+        
+        // Sidebar card
+        const sidebarName = document.getElementById('inboxSidebarAccountName');
+        const sidebarEmail = document.getElementById('inboxSidebarAccountEmail');
+        const sidebarAvatar = document.getElementById('inboxSidebarAvatar');
+
+        if (sidebarName) sidebarName.innerText = isConnected ? (this.connectedDisplayName || this.connectedEmail) : 'Sin conectar';
+        if (sidebarEmail) sidebarEmail.innerText = isConnected ? this.connectedEmail : 'Pulsa en Conectar';
+        if (sidebarAvatar) {
+            if (isConnected) {
+                const initials = (this.connectedDisplayName || this.connectedEmail).split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+                sidebarAvatar.innerText = initials || 'GM';
+                sidebarAvatar.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            } else {
+                sidebarAvatar.innerText = '?';
+                sidebarAvatar.style.background = 'linear-gradient(135deg, #94a3b8, #64748b)';
             }
-            if (syncDot) syncDot.innerText = "⚪";
-            if (syncText) syncText.innerText = "Conectar Gmail en Vivo";
+        }
+
+        // Header controls
+        const headerControls = document.getElementById('inboxHeaderAccountControls');
+        const headerPill = document.getElementById('inboxHeaderAccountPill');
+
+        if (headerPill) {
+            if (isConnected) {
+                headerPill.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--border); padding:5px 12px; border-radius:20px; font-size:0.82rem;">
+                        <span style="width:8px; height:8px; border-radius:50%; background:#10b981; display:inline-block;"></span>
+                        <strong style="color:var(--text-main);">${this.connectedEmail}</strong>
+                    </div>
+                    <button class="btn-secondary" onclick="inboxModule.switchGoogleAccount()" style="font-size:0.8rem; padding:6px 12px; display:flex; align-items:center; gap:4px;">
+                        <span>🔄</span> Cambiar Cuenta
+                    </button>
+                    <button class="btn-ghost" onclick="inboxModule.disconnectGoogleAccount()" style="font-size:0.8rem; padding:6px 10px; color:#ef4444;" title="Desconectar cuenta">
+                        ✕
+                    </button>
+                `;
+            } else {
+                headerPill.innerHTML = `
+                    <button class="btn-primary" onclick="inboxModule.connectAnyGoogleAccount()" style="background:#ea4335; border:none; display:flex; align-items:center; gap:6px; box-shadow:0 2px 8px rgba(234,67,53,0.3); font-weight:700; padding:8px 16px;">
+                        <span>🟢</span> <strong>Conectar con Google / Gmail</strong>
+                    </button>
+                `;
+            }
         }
     },
 
@@ -8557,7 +8680,6 @@ const inboxModule = {
             const badge = document.getElementById('badgeCount_' + key);
             if (badge) badge.innerText = count;
         }
-        this.updateConnectionStatusUI();
     },
 
     selectCategory(catKey) {
@@ -8569,7 +8691,7 @@ const inboxModule = {
         const label = document.getElementById('inboxListFilterLabel');
         if (label) {
             const names = {
-                all: 'Todos los correos reales',
+                all: 'Todos los correos',
                 unread: 'Correos no leídos',
                 invoices: 'Facturas y albaranes',
                 suppliers: 'Proveedores y pedidos',
@@ -8628,7 +8750,7 @@ const inboxModule = {
                 <div style="padding:40px 20px; text-align:center; color:var(--text-muted);">
                     <div style="font-size:2.5rem; animation:pulse 1.5s infinite;">🔄</div>
                     <h4 style="margin:12px 0 4px 0; color:var(--text-main);">Sincronizando con Gmail...</h4>
-                    <p style="margin:0; font-size:0.8rem;">Descargando correos reales de lino.brasserie@gmail.com</p>
+                    <p style="margin:0; font-size:0.8rem;">Descargando correos de ${this.connectedEmail || 'Google'}</p>
                 </div>
             `;
             return;
@@ -8641,19 +8763,14 @@ const inboxModule = {
                         📬
                     </div>
                     <h4 style="margin:0 0 6px 0; font-size:1.05rem; color:var(--text-main);">
-                        Buzón Real de Gmail
+                        Conectar Cuenta de Gmail
                     </h4>
                     <p style="font-size:0.82rem; color:var(--text-muted); line-height:1.45; margin:0 0 16px 0;">
-                        No hay correos simulados. Conecta tu cuenta oficial <strong>lino.brasserie@gmail.com</strong> para sincronizar mensajes en tiempo real.
+                        Conecta cualquier cuenta de Google para leer albaranes, gestionar reservas y responder correos desde GastroSuitePro.
                     </p>
-                    <div style="display:flex; flex-direction:column; gap:8px; max-width:240px; margin:0 auto;">
-                        <button class="btn-primary" onclick="inboxModule.connectGmailLive()" style="background:#ea4335; border:none; padding:8px 14px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 2px 8px rgba(234,67,53,0.3);">
-                            <span>🟢</span> Conectar Gmail
-                        </button>
-                        <button class="btn-secondary" onclick="openModal('googleClientConfigModal')" style="font-size:0.75rem; padding:6px 10px;">
-                            ⚙️ Configurar OAuth
-                        </button>
-                    </div>
+                    <button class="btn-primary" onclick="inboxModule.connectAnyGoogleAccount()" style="background:#ea4335; border:none; padding:10px 18px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 3px 10px rgba(234,67,53,0.3); margin:0 auto;">
+                        <span>🟢</span> Conectar con Google
+                    </button>
                 </div>
             `;
             return;
@@ -8664,7 +8781,7 @@ const inboxModule = {
         if (filtered.length === 0) {
             container.innerHTML = `
                 <div style="padding:32px 20px; text-align:center; color:var(--text-muted); font-size:0.85rem;">
-                    🔍 No se encontraron correos reales con los filtros actuales.
+                    🔍 No se encontraron correos con los filtros actuales.
                 </div>
             `;
             return;
@@ -8695,7 +8812,6 @@ const inboxModule = {
 
                     <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
                         ${e.hasAttachment ? `<span class="f-badge f-badge-info" style="font-size:0.68rem; padding:1px 6px;">📎 ${e.attachmentName || 'Adjunto'}</span>` : ''}
-                        ${e.isStarred ? '<span style="color:#fbbf24; font-size:0.8rem;">⭐</span>' : ''}
                     </div>
                 </div>
             `;
@@ -8707,7 +8823,6 @@ const inboxModule = {
         const email = this.emails.find(e => e.id === emailId);
         if (!email) return;
 
-        // Mark as read in UI and via Gmail API
         if (email.isUnread) {
             email.isUnread = false;
             this.updateBadgeCounts();
@@ -8728,7 +8843,6 @@ const inboxModule = {
         emptyState.style.display = 'none';
         content.style.display = 'flex';
 
-        // Subject & badges
         document.getElementById('inboxDetailSubject').innerText = email.subject || '(Sin asunto)';
         
         const badgesContainer = document.getElementById('inboxDetailBadges');
@@ -8742,21 +8856,15 @@ const inboxModule = {
         if (email.category.includes('reservations')) {
             badgesContainer.innerHTML += '<span class="f-badge f-badge-success" style="font-size:0.75rem;">🍽️ Reserva</span>';
         }
-        if (email.category.includes('reviews')) {
-            badgesContainer.innerHTML += '<span class="f-badge" style="background:#fbbf24; color:#0f172a; font-weight:bold; font-size:0.75rem;">⭐ Reseña</span>';
-        }
 
-        // Sender Info
         document.getElementById('inboxDetailSenderName').innerText = email.sender || 'Remitente';
         document.getElementById('inboxDetailSenderEmail').innerText = email.fromEmail ? `<${email.fromEmail}>` : '';
         document.getElementById('inboxDetailDate').innerText = email.date || '';
 
-        // Initials Avatar
         const words = (email.sender || 'LB').split(' ').filter(Boolean);
         const initials = words.slice(0, 2).map(w => w[0]).join('').toUpperCase();
         document.getElementById('inboxDetailSenderAvatar').innerText = initials || 'LB';
 
-        // Action Buttons Visibility
         const btnScan = document.getElementById('btnInboxScanAction');
         const btnExp = document.getElementById('btnInboxExpenseAction');
         const btnPrev = document.getElementById('btnInboxPreviewDocAction');
@@ -8771,21 +8879,18 @@ const inboxModule = {
             btnPrev.style.display = 'none';
         }
 
-        // Message Body (safe HTML / text)
         document.getElementById('inboxDetailBodyText').innerHTML = email.body || `<p style="color:var(--text-muted);">${email.snippet || ''}</p>`;
 
-        // Attachment Section
         const attachSec = document.getElementById('inboxDetailAttachmentSection');
         if (email.hasAttachment) {
             attachSec.style.display = 'block';
             document.getElementById('inboxDetailAttachName').innerText = email.attachmentName || 'Archivo_Adjunto';
-            document.getElementById('inboxDetailAttachSize').innerText = `Documento adjunto real (${email.attachmentSize || 'Descargable'})`;
+            document.getElementById('inboxDetailAttachSize').innerText = `Documento adjunto (${email.attachmentSize || 'Descargable'})`;
         } else {
             attachSec.style.display = 'none';
         }
     },
 
-    // OPEN COMPOSE MODAL (NEW EMAIL)
     openComposeModal(prefill = {}) {
         openModal('gmailComposeModal');
         document.getElementById('composeModalTitle').innerText = prefill.subject ? "Responder Correo" : "Redactar Nuevo Correo";
@@ -8798,12 +8903,11 @@ const inboxModule = {
         document.getElementById('composeStatusAlert').style.display = 'none';
     },
 
-    // OPEN REPLY MODAL (REPLY TO CURRENT ACTIVE EMAIL)
     openReplyModal() {
         const email = this.emails.find(e => e.id === this.activeEmailId);
         if (!email) return showToast("Selecciona un correo para responder", "warning");
 
-        const subject = email.subject.toLowerCase().startsWith('re:') ? email.subject : `Re: ${email.subject}`;
+        const subject = (email.subject || '').toLowerCase().startsWith('re:') ? email.subject : `Re: ${email.subject || ''}`;
         this.openComposeModal({
             to: email.fromEmail || '',
             subject: subject,
@@ -8814,11 +8918,8 @@ const inboxModule = {
         });
     },
 
-    // AI ASSISTANT FOR DRAFTING
     async generateAiDraft() {
-        const to = document.getElementById('composeToEmail').value;
         const subject = document.getElementById('composeSubject').value;
-        const existingBody = document.getElementById('composeBody').value;
         const activeEmail = this.emails.find(e => e.id === this.activeEmailId);
 
         showToast("✨ Redactando borrador profesional con IA...", "info");
@@ -8826,23 +8927,19 @@ const inboxModule = {
         let draft = "";
         const isReservation = (subject.toLowerCase().includes('reserva') || (activeEmail && activeEmail.category.includes('reservations')));
         const isSupplier = (subject.toLowerCase().includes('albar') || subject.toLowerCase().includes('factura') || (activeEmail && activeEmail.category.includes('suppliers')));
-        const isReview = (subject.toLowerCase().includes('reseña') || (activeEmail && activeEmail.category.includes('reviews')));
 
         if (isReservation) {
-            draft = "Estimada/o cliente,\n\nMuchas gracias por contactar con Lino Brasserie. Confirmamos la recepción de su solicitud de reserva. Con mucho gusto tomamos nota de sus indicaciones de comensales y protocolos de alérgenos/sin gluten para garantizarles una experiencia segura e inolvidable.\n\nQuedamos a su entera disposición si desean modificar algún detalle.\n\nAtentamente,\nEquipo de Sala y Reservas · Lino Brasserie\nlino.brasserie@gmail.com";
+            draft = "Estimada/o cliente,\n\nMuchas gracias por contactar con nuestro restaurante. Confirmamos la recepción de su solicitud de reserva. Tomamos nota de sus indicaciones de comensales y protocolos de alérgenos/sin gluten para garantizarles una experiencia segura e inolvidable.\n\nQuedamos a su entera disposición si desean modificar algún detalle.\n\nAtentamente,\nEquipo de Sala y Reservas";
         } else if (isSupplier) {
-            draft = "Estimados proveedores,\n\nHemos recibido conforme el documento y la entrega en cocina. Los precios y artículos han sido registrados en nuestro sistema de control de costes.\n\nCualquier observación adicional se la comunicaremos a la mayor brevedad.\n\nUn cordial saludo,\nJefatura de Cocina · Lino Brasserie\nlino.brasserie@gmail.com";
-        } else if (isReview) {
-            draft = "Estimado cliente,\n\nLe agradecemos sinceramente el tiempo dedicado a compartir su valoración sobre Lino Brasserie. Nos complace saber que ha disfrutado de nuestra gastronomía a la brasa y del servicio de sala. ¡Esperamos tener el placer de atenderle de nuevo muy pronto!\n\nAtentamente,\nDirección y Equipo de Cocina · Lino Brasserie";
+            draft = "Estimados proveedores,\n\nHemos recibido conforme el documento y la entrega en cocina. Los precios y artículos han sido registrados en nuestro sistema de control de costes.\n\nCualquier observación adicional se la comunicaremos a la mayor brevedad.\n\nUn cordial saludo,\nJefatura de Cocina";
         } else {
-            draft = "Estimada/o,\n\nMuchas gracias por su comunicación. Hemos recibido su mensaje correctamente y procedemos a darle curso.\n\nPara cualquier consulta inmediata, no dude en contactarnos.\n\nAtentamente,\nLino Brasserie\nlino.brasserie@gmail.com";
+            draft = "Estimada/o,\n\nMuchas gracias por su comunicación. Hemos recibido su mensaje correctamente y procedemos a darle curso.\n\nPara cualquier consulta inmediata, no dude en contactarnos.\n\nAtentamente";
         }
 
         document.getElementById('composeBody').value = draft;
         showToast("✅ Borrador generado por IA. Puedes revisarlo antes de enviar.", "success");
     },
 
-    // SUBMIT REAL EMAIL SENDING VIA GMAIL API
     async submitSendEmail() {
         const to = document.getElementById('composeToEmail').value.trim();
         const subject = document.getElementById('composeSubject').value.trim();
@@ -8851,9 +8948,9 @@ const inboxModule = {
         const references = document.getElementById('composeReferences').value;
         const threadId = document.getElementById('composeThreadId').value;
 
-        if (!to) return showToast("Por favor introduce el correo del destinatario", "warning");
-        if (!subject) return showToast("Por favor escribe un asunto", "warning");
-        if (!body) return showToast("Por favor escribe el contenido del mensaje", "warning");
+        if (!to) return showToast("Introduce el correo del destinatario", "warning");
+        if (!subject) return showToast("Escribe un asunto", "warning");
+        if (!body) return showToast("Escribe el contenido del mensaje", "warning");
 
         const btn = document.getElementById('btnSubmitRealSend');
         const alertBox = document.getElementById('composeStatusAlert');
@@ -8867,17 +8964,17 @@ const inboxModule = {
                 body,
                 inReplyTo,
                 references,
-                threadId
+                threadId,
+                fromEmail: this.connectedEmail
             });
 
             showToast("🎉 ¡Correo enviado con éxito a través de Gmail!", "success");
             closeModal('gmailComposeModal');
 
-            // Append sent message to local sent category
             this.emails.unshift({
                 id: 'sent_' + Date.now(),
-                sender: 'Lino Brasserie (Enviado)',
-                fromEmail: 'lino.brasserie@gmail.com',
+                sender: 'Yo (' + (this.connectedEmail || 'Enviado') + ')',
+                fromEmail: this.connectedEmail || '',
                 toEmail: to,
                 date: 'Hoy, ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 timestamp: Date.now(),
@@ -8892,13 +8989,13 @@ const inboxModule = {
             this.updateBadgeCounts();
             this.renderEmailList();
         } catch (err) {
-            console.error("Error sending real email via Gmail API:", err);
+            console.error("Error sending email via Gmail API:", err);
             if (alertBox) {
                 alertBox.style.display = 'block';
                 alertBox.style.background = '#fef2f2';
                 alertBox.style.border = '1px solid #f87171';
                 alertBox.style.color = '#991b1b';
-                alertBox.innerHTML = `<strong>Error al enviar:</strong> ${err.message}. Verifica que tu cuenta de Google esté autorizada con permisos de envío (gmail.send).`;
+                alertBox.innerHTML = `<strong>Error al enviar:</strong> ${err.message}`;
             }
             showToast("❌ Error al enviar correo: " + err.message, "danger");
         } finally {
@@ -8907,14 +9004,12 @@ const inboxModule = {
         }
     },
 
-    // SCAN ATTACHMENT INTO OCR VISUAL SPLIT SCREEN
     async scanSelectedAttachment() {
         const email = this.emails.find(e => e.id === this.activeEmailId);
         if (!email || !email.hasAttachment) {
-            return showToast("Este correo no tiene ningún documento adjunto.", "warning");
+            return showToast("Este correo no tiene documento adjunto.", "warning");
         }
 
-        // If email has real Gmail attachmentId, fetch real blob
         if (email.attachmentId && googleServicesManager.gmail.accessToken) {
             showToast(`Descargando ${email.attachmentName} desde Gmail API...`, "info");
             try {
@@ -8931,7 +9026,6 @@ const inboxModule = {
             }
         }
 
-        // Fallback to sample albarán
         financeModule.openScanModal();
         financeModule.loadSampleAlbaran(email.sampleType || 'carnes', email.attachmentName || 'Albaran.pdf');
     },
@@ -8959,7 +9053,7 @@ const inboxModule = {
                     docNameEl.style.display = 'inline-block';
                 }
             }
-            showToast("✅ Datos del albarán trasladados al formulario de gasto.", "success");
+            showToast("✅ Datos trasladados al formulario de gasto.", "success");
         }, 150);
     },
 
@@ -8983,7 +9077,7 @@ const inboxModule = {
                 }
                 return;
             } catch(e) {
-                console.warn("Could not preview real attachment, opening textual viewer:", e);
+                console.warn("Could not preview real attachment:", e);
             }
         }
 
@@ -9045,17 +9139,9 @@ const inboxModule = {
         showToast("Arrastra el archivo y suéltalo en el Escáner o en los Escandallos", "info");
     },
 
-    connectGmailLive() {
-        if (window.googleServicesManager && googleServicesManager.gmail) {
-            googleServicesManager.gmail.initLiveSync();
-        } else {
-            gmailSyncModule.openDirectGmailSearch();
-        }
-    },
-
     async syncWithGmailLive() {
         if (!googleServicesManager.gmail.accessToken) {
-            return this.connectGmailLive();
+            return this.connectAnyGoogleAccount();
         }
 
         this.isLoading = true;
@@ -9072,55 +9158,18 @@ const inboxModule = {
         }
     },
 
-    saveGoogleConfig() {
-        const clientId = document.getElementById('googleClientIdInput')?.value.trim();
-        const manualToken = document.getElementById('googleManualTokenInput')?.value.trim();
-
-        if (clientId) {
-            localStorage.setItem('gsp_google_client_id', clientId);
-            showToast("Google Client ID guardado.", "success");
-        }
-        if (manualToken) {
-            sessionStorage.setItem('gsp_google_access_token', manualToken);
-            googleServicesManager.gmail.accessToken = manualToken;
-            googleServicesManager.gmail.isConnected = true;
-            showToast("Token de acceso configurado manualmente.", "success");
-        }
-
-        closeModal('googleClientConfigModal');
-        this.updateConnectionStatusUI();
-        if (googleServicesManager.gmail.accessToken) {
-            this.syncWithGmailLive();
-        } else {
-            this.connectGmailLive();
-        }
-    },
-
-    disconnectGmail() {
-        sessionStorage.removeItem('gsp_google_access_token');
-        localStorage.removeItem('gsp_google_access_token');
-        googleServicesManager.gmail.accessToken = null;
-        googleServicesManager.gmail.isConnected = false;
-        this.emails = [];
-        localStorage.removeItem('gsp_real_emails_cache');
-        this.activeEmailId = null;
-        this.updateBadgeCounts();
-        this.render();
-        closeModal('googleClientConfigModal');
-        showToast("Bandeja de Gmail desconectada.", "info");
-    },
-
     refresh() {
         if (googleServicesManager.gmail.accessToken) {
-            showToast("Consultando nuevos correos reales en Gmail...", "info");
+            showToast("Consultando nuevos correos reales...", "info");
             this.syncWithGmailLive();
         } else {
-            this.connectGmailLive();
+            this.connectAnyGoogleAccount();
         }
     },
 
     render() {
         this.updateBadgeCounts();
+        this.updateAccountDisplayUI();
         this.renderEmailList();
         if (this.emails.length > 0) {
             const activeEmail = this.emails.find(e => e.id === this.activeEmailId) || this.emails[0];
@@ -9139,7 +9188,7 @@ const inboxModule = {
 
 
 /* ==========================================================================
-   GOOGLE SERVICES MANAGER (100% REAL GMAIL REST API & GOOGLE BUSINESS IA)
+   GOOGLE SERVICES MANAGER (UNIVERSAL GMAIL REST API & GOOGLE BUSINESS IA)
    ========================================================================== */
 const googleServicesManager = {
     gmail: {
@@ -9148,46 +9197,13 @@ const googleServicesManager = {
         isConnected: false,
 
         getClientId() {
-            return localStorage.getItem('gsp_google_client_id') || "999617852679-placeholder.apps.googleusercontent.com";
+            return localStorage.getItem('gsp_google_client_id') || "";
         },
 
         async initLiveSync() {
-            showToast("Conectando con Google Identity Services en vivo...", "info");
-            const clientId = this.getClientId();
-
-            try {
-                if (typeof google !== 'undefined' && google.accounts && google.accounts.oauth2) {
-                    this.tokenClient = google.accounts.oauth2.initTokenClient({
-                        client_id: clientId,
-                        scope: "https://www.googleapis.com/auth/gmail.modify https://www.googleapis.com/auth/gmail.send",
-                        prompt: 'select_account',
-                        callback: async (resp) => {
-                            if (resp.access_token) {
-                                this.accessToken = resp.access_token;
-                                this.isConnected = true;
-                                sessionStorage.setItem('gsp_google_access_token', resp.access_token);
-                                showToast("🟢 Conectado con Gmail en tiempo real", "success");
-                                if (window.inboxModule) inboxModule.onGmailConnected();
-                            } else if (resp.error) {
-                                console.error("OAuth error response:", resp);
-                                showToast("Error de autorización Google: " + resp.error, "danger");
-                                openModal('googleClientConfigModal');
-                            }
-                        }
-                    });
-                    this.tokenClient.requestAccessToken();
-                } else {
-                    // Fallback to Google Auth Login
-                    showToast("Inicia sesión con Google para autorizar Gmail", "info");
-                    if (window.authManager && typeof authManager.loginWithGoogle === 'function') {
-                        authManager.loginWithGoogle();
-                    } else {
-                        openModal('googleClientConfigModal');
-                    }
-                }
-            } catch (err) {
-                console.warn("OAuth direct init error:", err);
-                openModal('googleClientConfigModal');
+            // Trigger in-app Google login/account selection
+            if (window.inboxModule && typeof inboxModule.connectAnyGoogleAccount === 'function') {
+                return await inboxModule.connectAnyGoogleAccount();
             }
         },
 
@@ -9195,10 +9211,10 @@ const googleServicesManager = {
         async fetchLiveEmails() {
             if (!this.accessToken) return;
 
-            showToast("Descargando correos reales de lino.brasserie@gmail.com...", "info");
+            const activeEmail = (window.inboxModule && inboxModule.connectedEmail) ? inboxModule.connectedEmail : 'Gmail';
+            showToast(`Descargando correos de ${activeEmail}...`, "info");
 
             try {
-                // 1. Fetch message list from Gmail API
                 const listUrl = "https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=25";
                 const listRes = await fetch(listUrl, {
                     headers: { 'Authorization': 'Bearer ' + this.accessToken }
@@ -9217,11 +9233,10 @@ const googleServicesManager = {
                         inboxModule.emails = [];
                         inboxModule.render();
                     }
-                    showToast("Bandeja de Gmail sin mensajes recientes.", "info");
+                    showToast("Bandeja sin mensajes recientes.", "info");
                     return;
                 }
 
-                // 2. Fetch details for up to 15 recent messages in parallel
                 const fetchPromises = msgRefs.slice(0, 15).map(m => 
                     fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=full`, {
                         headers: { 'Authorization': 'Bearer ' + this.accessToken }
@@ -9233,7 +9248,7 @@ const googleServicesManager = {
 
                 if (window.inboxModule) {
                     inboxModule.emails = parsedEmails;
-                    localStorage.setItem('gsp_real_emails_cache', JSON.stringify(parsedEmails));
+                    localStorage.setItem('gsp_real_emails_' + (inboxModule.connectedEmail || 'default'), JSON.stringify(parsedEmails));
                     inboxModule.render();
                 }
 
@@ -9244,7 +9259,6 @@ const googleServicesManager = {
             }
         },
 
-        // PARSE GMAIL API RFC 2822 PAYLOAD INTO UNIFIED RESTAURANT EMAIL OBJECT
         parseGmailMessage(msg) {
             const headers = (msg.payload && msg.payload.headers) || [];
             const getHeader = (name) => {
@@ -9254,11 +9268,10 @@ const googleServicesManager = {
 
             const subject = getHeader('Subject') || '(Sin Asunto)';
             const fromRaw = getHeader('From') || 'Desconocido';
-            const toRaw = getHeader('To') || 'lino.brasserie@gmail.com';
+            const toRaw = getHeader('To') || '';
             const dateRaw = getHeader('Date') || '';
             const messageIdHeader = getHeader('Message-ID') || '';
 
-            // Parse sender name & email
             let sender = fromRaw;
             let fromEmail = fromRaw;
             const fromMatch = fromRaw.match(/(.*?)\s*<([^>]+)>/);
@@ -9267,15 +9280,12 @@ const googleServicesManager = {
                 fromEmail = fromMatch[2].trim();
             }
 
-            // Extract Body (Text / HTML)
             let body = this.extractBody(msg.payload) || `<p>${msg.snippet || ''}</p>`;
 
-            // Extract Attachments
             const attachments = [];
             this.extractAttachments(msg.payload, attachments);
             const mainAttach = attachments[0] || null;
 
-            // Categorization based on real content
             const labels = msg.labelIds || [];
             const isUnread = labels.includes('UNREAD');
             const isStarred = labels.includes('STARRED');
@@ -9324,14 +9334,12 @@ const googleServicesManager = {
             };
         },
 
-        // RECURSIVE BODY EXTRACTOR
         extractBody(payload) {
             if (!payload) return '';
             if (payload.body && payload.body.data) {
                 return this.decodeBase64Url(payload.body.data);
             }
             if (payload.parts && payload.parts.length) {
-                // Prefer HTML over plain text
                 const htmlPart = payload.parts.find(p => p.mimeType === 'text/html');
                 if (htmlPart && htmlPart.body && htmlPart.body.data) {
                     return this.decodeBase64Url(htmlPart.body.data);
@@ -9348,7 +9356,6 @@ const googleServicesManager = {
             return '';
         },
 
-        // RECURSIVE ATTACHMENT EXTRACTOR
         extractAttachments(payload, acc) {
             if (!payload) return;
             if (payload.filename && payload.body && payload.body.attachmentId) {
@@ -9364,7 +9371,6 @@ const googleServicesManager = {
             }
         },
 
-        // SAFE BASE64URL DECODER
         decodeBase64Url(base64UrlStr) {
             try {
                 let base64 = base64UrlStr.replace(/-/g, '+').replace(/_/g, '/');
@@ -9379,7 +9385,6 @@ const googleServicesManager = {
             }
         },
 
-        // FETCH REAL ATTACHMENT BINARY BLOB
         async fetchAttachmentBlob(messageId, attachmentId, mimeType = 'application/pdf') {
             if (!this.accessToken) throw new Error("No conectado a Gmail");
             const res = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}/attachments/${attachmentId}`, {
@@ -9398,15 +9403,16 @@ const googleServicesManager = {
             return new Blob([bytes], { type: mimeType });
         },
 
-        // SEND REAL EMAIL VIA GMAIL API (RFC 2822 / UTF-8)
-        async sendEmail({ to, subject, body, inReplyTo, references, threadId }) {
+        async sendEmail({ to, subject, body, inReplyTo, references, threadId, fromEmail }) {
             if (!this.accessToken) {
                 throw new Error("No hay sesión activa con Google. Conecta tu cuenta primero.");
             }
 
+            const senderAddress = fromEmail || (window.inboxModule && inboxModule.connectedEmail) || 'me';
+
             const emailLines = [];
             emailLines.push(`To: ${to}`);
-            emailLines.push(`From: lino.brasserie@gmail.com`);
+            emailLines.push(`From: ${senderAddress}`);
             emailLines.push(`Subject: =?utf-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`);
             emailLines.push('MIME-Version: 1.0');
             emailLines.push('Content-Type: text/html; charset=UTF-8');
@@ -9441,7 +9447,6 @@ const googleServicesManager = {
             return await response.json();
         },
 
-        // MODIFY LABELS (READ, STAR, ARCHIVE)
         async modifyMessage(messageId, addLabels = [], removeLabels = []) {
             if (!this.accessToken) return;
             const res = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}/modify`, {
@@ -9458,7 +9463,6 @@ const googleServicesManager = {
             return await res.json();
         },
 
-        // TRASH MESSAGE
         async trashMessage(messageId) {
             if (!this.accessToken) return;
             const res = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}/trash`, {
@@ -9469,7 +9473,6 @@ const googleServicesManager = {
         }
     },
 
-    // 2. GOOGLE BUSINESS PROFILE (RESPUESTAS CON IA)
     businessProfile: {
         isConnected: false,
         accountName: "Lino Brasserie",
@@ -9491,8 +9494,8 @@ window.onload = initApp;
         <div style="display:flex; align-items:center; gap:8px;">
             <span style="font-size:1.3rem;">📬</span>
             <div>
-                <div style="font-size:0.85rem; font-weight:800; line-height:1.2;">Bandeja Lino Brasserie</div>
-                <div style="font-size:0.72rem; color:#94a3b8;">lino.brasserie@gmail.com</div>
+                <div style="font-size:0.85rem; font-weight:800; line-height:1.2;" id="gadgetHeaderTitle">Bandeja de Correo</div>
+                <div style="font-size:0.72rem; color:#94a3b8;" id="gadgetHeaderEmail">Conectar con Google</div>
             </div>
         </div>
         <div style="display:flex; gap:4px; align-items:center;">
@@ -9565,7 +9568,7 @@ window.onload = initApp;
 
     <!-- GADGET FOOTER -->
     <div style="padding:10px 14px; background:var(--surface-subtle); border-top:1px solid var(--border-subtle); display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:var(--text-muted);">
-        <span>Sincronizado con <strong>lino.brasserie@gmail.com</strong></span>
+        <span id="gadgetFooterStatus">Bandeja de Correo Google</span>
         <button class="btn-ghost" onclick="emailGadget.uploadCustomDocument()" style="font-size:0.75rem; padding:3px 6px;">
             📁 Subir archivo
         </button>
