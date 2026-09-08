@@ -983,7 +983,130 @@
 
     <!-- Mozilla PDF.js for Client-Side Real PDF Parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script>
+    
+<!-- ==========================================================================
+     MODAL: VISUALIZADOR DE FACTURAS Y ALBARANES GUARDADOS EN BASE DE DATOS
+     ========================================================================== -->
+<div class="modal-overlay" id="invoiceViewerModal" style="display:none; z-index:9999;">
+    <div class="modal-card" style="max-width:850px; width:95%; max-height:92vh; display:flex; flex-direction:column;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:12px; margin-bottom:14px;">
+            <div>
+                <h3 id="invoiceViewerTitle" style="margin:0; font-size:1.2rem; color:var(--text-main); display:flex; align-items:center; gap:8px;">
+                    <span>📄</span> Factura / Albarán Guardado
+                </h3>
+                <div id="invoiceViewerSubtitle" style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;"></div>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button class="btn-primary" id="btnDownloadInvoiceOriginal" onclick="financeModule.downloadCurrentViewedInvoice()" style="font-size:0.8rem; padding:5px 10px;">
+                    📥 Descargar
+                </button>
+                <button class="btn-ghost icon-btn" onclick="closeModal('invoiceViewerModal')">✕</button>
+            </div>
+        </div>
+
+        <!-- DOCUMENT DISPLAY BODY -->
+        <div id="invoiceViewerBody" style="flex:1; overflow:auto; background:var(--surface-subtle); border-radius:8px; border:1px solid var(--border-subtle); display:flex; justify-content:center; align-items:center; min-height:400px;">
+            <!-- Rendered dynamically (img or iframe or pdf canvas) -->
+        </div>
+    </div>
+</div>
+
+<!-- ==========================================================================
+     MODAL: REGISTRAR / EDITAR CIERRE DE CAJA (Z DIARIA DEL TPV)
+     ========================================================================== -->
+<div class="modal-overlay" id="dailyZModal" style="display:none; z-index:9999;">
+    <div class="modal-card" style="max-width:620px; width:95%; max-height:90vh; overflow-y:auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:12px; margin-bottom:16px;">
+            <h3 id="dailyZModalTitle" style="margin:0; font-size:1.25rem; color:var(--text-main); display:flex; align-items:center; gap:8px;">
+                <span>💵</span> Registrar Cierre de Caja (Z Diaria)
+            </h3>
+            <button class="btn-ghost icon-btn" onclick="closeModal('dailyZModal')">✕</button>
+        </div>
+
+        <form id="dailyZForm" onsubmit="financeModule.saveDailyZForm(event)" style="display:flex; flex-direction:column; gap:14px;">
+            <input type="hidden" id="zId">
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                <div>
+                    <label style="font-size:0.78rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Fecha del Cierre *</label>
+                    <input type="date" id="zDate" required style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text-main); font-size:0.9rem;">
+                </div>
+                <div>
+                    <label style="font-size:0.78rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Turno de Servicio *</label>
+                    <select id="zShift" required style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text-main); font-size:0.9rem;">
+                        <option value="total_day">🌓 Día Completo (Comida + Cena)</option>
+                        <option value="lunch">☀️ Solo Servicio Comida</option>
+                        <option value="dinner">🌙 Solo Servicio Cena</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- TOTAL SALES & COVERS -->
+            <div style="display:grid; grid-template-columns: 1.3fr 1fr; gap:12px; background:var(--surface-subtle); padding:12px; border-radius:8px;">
+                <div>
+                    <label style="font-size:0.78rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Ventas Totales Brutas (Con IVA €) *</label>
+                    <input type="number" id="zGross" step="0.01" required oninput="financeModule.recalcZForm()" placeholder="0.00" style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:#10b981; font-size:1.2rem; font-weight:bold; text-align:right;">
+                </div>
+                <div>
+                    <label style="font-size:0.78rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Nº Comensales / Tickets</label>
+                    <input type="number" id="zCovers" min="1" oninput="financeModule.recalcZForm()" placeholder="Ej: 75" style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text-main); font-size:1.1rem; font-weight:bold; text-align:right;">
+                </div>
+            </div>
+
+            <!-- PAYMENT METHODS BREAKDOWN -->
+            <div style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:12px;">
+                <div style="font-size:0.78rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px;">
+                    Desglose por Métodos de Pago
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
+                    <div>
+                        <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:2px;">💳 Tarjeta / Datáfono</label>
+                        <input type="number" id="zCard" step="0.01" oninput="financeModule.recalcZForm()" placeholder="0.00" style="width:100%; padding:6px 8px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text-main); text-align:right; font-size:0.85rem;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:2px;">💶 Efectivo en Caja</label>
+                        <input type="number" id="zCash" step="0.01" oninput="financeModule.recalcZForm()" placeholder="0.00" style="width:100%; padding:6px 8px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text-main); text-align:right; font-size:0.85rem;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:2px;">🛵 Delivery / Otros</label>
+                        <input type="number" id="zDelivery" step="0.01" oninput="financeModule.recalcZForm()" placeholder="0.00" style="width:100%; padding:6px 8px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text-main); text-align:right; font-size:0.85rem;">
+                    </div>
+                </div>
+                <div id="zPaymentDifference" style="font-size:0.75rem; color:var(--text-muted); margin-top:6px; text-align:right;">
+                    Ticket Medio Calculado: <strong id="zCalculatedAvgTicket" style="color:var(--accent);">0.00 €/pax</strong>
+                </div>
+            </div>
+
+            <!-- TICKET PHOTO ATTACHMENT -->
+            <div>
+                <label style="font-size:0.78rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">
+                    📸 Foto del Ticket Z de Cierre del TPV (Guardada en BD)
+                </label>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <input type="file" id="zTicketFileInput" accept="image/*,application/pdf" onchange="financeModule.handleZTicketFileAttachment(event)" style="flex:1; padding:6px; border:1px solid var(--border); border-radius:6px; font-size:0.8rem; background:var(--surface); color:var(--text-main);">
+                </div>
+                <div id="zTicketFileStatus" style="font-size:0.75rem; color:#10b981; margin-top:4px; display:none;"></div>
+            </div>
+
+            <div>
+                <label style="font-size:0.78rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Notas u Observaciones del Servicio</label>
+                <textarea id="zNotes" rows="2" placeholder="Ej: Lleno en terraza, evento privado, incidencias..." style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text-main); font-size:0.85rem;"></textarea>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; border-top:1px solid var(--border); padding-top:12px;">
+                <button type="button" class="btn-danger" id="btnDeleteZModal" onclick="financeModule.deleteCurrentModalZ()" style="display:none;">
+                    🗑️ Eliminar
+                </button>
+                <div style="display:flex; gap:10px; margin-left:auto;">
+                    <button type="button" class="btn-secondary" onclick="closeModal('dailyZModal')">Cancelar</button>
+                    <button type="submit" class="btn-primary" style="background:#10b981; border:none;">💾 Guardar Cierre Z</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
         if (typeof pdfjsLib !== 'undefined') {
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         }
@@ -1682,7 +1805,21 @@
          ========================================================================== -->
     <main class="app-view" id="viewFinance">
         <!-- HEADER WITH SUMMARY AND QUICK ACTIONS -->
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; flex-wrap:wrap; gap:16px;">
+        
+        <!-- FINANCES SUBTABS: GASTOS vs VENTAS (Z DIARIA) -->
+        <div style="display:flex; gap:10px; margin-bottom:18px; border-bottom:2px solid var(--border-subtle); padding-bottom:10px;" class="no-print">
+            <button class="nav-tab-btn active" id="finSubtabExpenses" onclick="financeModule.switchSubtab('expenses')" style="font-size:0.9rem; padding:8px 18px; display:flex; align-items:center; gap:6px;">
+                💸 <span>Gastos Operativos</span>
+            </button>
+            <button class="nav-tab-btn" id="finSubtabSales" onclick="financeModule.switchSubtab('sales')" style="font-size:0.9rem; padding:8px 18px; display:flex; align-items:center; gap:6px;">
+                💵 <span>Ventas y Cierres de Caja (Z Diaria)</span>
+            </button>
+        </div>
+
+        
+        <!-- SECTION 1: GASTOS OPERATIVOS -->
+        <div id="secFinanceExpenses">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; flex-wrap:wrap; gap:16px;">
             <div>
                 <span style="font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; color:var(--accent); font-weight:800;">Módulo Económico & Compras</span>
                 <h2 style="margin:2px 0 6px 0; font-size:1.8rem; color:var(--text-main);">Control de Finanzas y Gastos Operativos</h2>
@@ -1858,6 +1995,134 @@
                 </button>
             </div>
         </div>
+        </div>
+        
+        <!-- SECTION 2: VENTAS Y CIERRES DE CAJA (Z DIARIA DEL TPV) -->
+        <div id="secFinanceSales" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; flex-wrap:wrap; gap:16px;">
+                <div>
+                    <span style="font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; color:#10b981; font-weight:800;">Ingresos Reales & Cierres de Caja</span>
+                    <h2 style="margin:2px 0 6px 0; font-size:1.8rem; color:var(--text-main);">Ventas Reales y Cierre Z Diario (TPV)</h2>
+                    <p style="margin:0; font-size:0.85rem; color:var(--text-muted);">
+                        Sube las Zetas diarias de tu TPV para auditar cobros en tarjeta/efectivo, calcular el ticket medio real y medir el Food Cost sobre facturación real.
+                    </p>
+                </div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <button class="btn-primary" onclick="financeModule.openNewZModal()" id="btnNewZ" style="background:#10b981; border:none; display:flex; align-items:center; gap:6px;">
+                        <span>➕</span> <strong>Registrar Z Diaria</strong>
+                    </button>
+                    <button class="btn-ghost icon-btn" onclick="financeModule.exportSalesCSV()" title="Exportar ventas a Excel / CSV">
+                        📥 CSV
+                    </button>
+                </div>
+            </div>
+
+            <!-- SALES KPIS -->
+            <div class="finance-kpi-grid">
+                <div class="finance-card">
+                    <div class="f-label">
+                        <span>Ventas Reales del Mes (Zetas)</span>
+                        <span>💶</span>
+                    </div>
+                    <div class="f-value" id="sKpiTotalSales" style="color:#10b981;">0 €</div>
+                    <div class="f-sub" id="sKpiTotalNet">Base Imponible: 0 €</div>
+                </div>
+
+                <div class="finance-card">
+                    <div class="f-label">
+                        <span>Progreso vs Objetivo (86.000 €)</span>
+                        <span>🎯</span>
+                    </div>
+                    <div class="f-value" id="sKpiSalesProgress">0%</div>
+                    <div class="f-sub" id="sKpiSalesDiff">Faltan: 0 € para el objetivo</div>
+                </div>
+
+                <div class="finance-card">
+                    <div class="f-label">
+                        <span>Comensales y Ticket Medio</span>
+                        <span>👥</span>
+                    </div>
+                    <div class="f-value" id="sKpiAvgTicket" style="font-size:1.6rem;">0 €/pax</div>
+                    <div class="f-sub" id="sKpiTotalCovers">0 comensales registrados</div>
+                </div>
+
+                <div class="finance-card">
+                    <div class="f-label">
+                        <span>Reparto Cobros: Tarjeta vs Efectivo</span>
+                        <span>💳</span>
+                    </div>
+                    <div class="f-value" id="sKpiCardPct" style="font-size:1.6rem; color:#2563eb;">0% TPV</div>
+                    <div class="f-sub" id="sKpiCashPct">0% en efectivo</div>
+                </div>
+
+                <div class="finance-card">
+                    <div class="f-label">
+                        <span>Food Cost Real sobre Zetas</span>
+                        <span>⚖️</span>
+                    </div>
+                    <div class="f-value" id="sKpiRealFoodCost" style="color:var(--accent);">0%</div>
+                    <div class="f-sub" id="sKpiRealFCSub">vs 28.0% teórico de escandallos</div>
+                </div>
+            </div>
+
+            <!-- PROGRESS BAR VS TARGET -->
+            <div class="card" style="margin-bottom:20px; padding:16px 20px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <h4 style="margin:0; font-size:0.9rem; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted);">
+                        Facturación Real Acumulada vs Objetivo Mensual (<span id="sSalesTargetDisplay">86.000 €</span>)
+                    </h4>
+                    <span id="sSalesProgressText" style="font-size:0.8rem; font-weight:700; color:var(--text-main);">0% Cumplido</span>
+                </div>
+                <div style="width:100%; height:16px; background:var(--border-subtle); border-radius:8px; overflow:hidden;">
+                    <div id="sSalesProgressBar" style="width:0%; height:100%; background:linear-gradient(90deg, #10b981, #059669); transition:width 0.4s ease;"></div>
+                </div>
+            </div>
+
+            <!-- DAILY Z TABLE -->
+            <div class="expense-table-container">
+                <div style="padding:14px 18px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); background:var(--surface);">
+                    <div style="font-weight:700; font-size:0.95rem;">
+                        📋 Registro Histórico de Cierres Z (<span id="sZCount">0</span> días)
+                    </div>
+                    <div style="font-size:0.8rem; color:var(--text-muted);" id="sZTableSubTotal">
+                        Total Facturado: <strong>0 €</strong>
+                    </div>
+                </div>
+
+                <div style="overflow-x:auto;">
+                    <table class="expense-table" id="dailyZTable">
+                        <thead>
+                            <tr>
+                                <th style="width:105px;">Fecha</th>
+                                <th style="width:120px;">Turno</th>
+                                <th style="text-align:right; width:110px;">Ventas Brutas</th>
+                                <th style="text-align:right; width:100px;">Base Imponible</th>
+                                <th style="text-align:right; width:105px;">Tarjeta (TPV)</th>
+                                <th style="text-align:right; width:100px;">Efectivo</th>
+                                <th style="text-align:center; width:90px;">Comensales</th>
+                                <th style="text-align:right; width:100px;">Ticket Medio</th>
+                                <th style="text-align:center; width:100px;">Ticket Z</th>
+                                <th style="text-align:center; width:90px;" class="no-print">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dailyZTableBody">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="salesEmptyState" style="display:none; padding:40px 20px; text-align:center; color:var(--text-muted);">
+                    <div style="font-size:2.5rem; margin-bottom:8px;">💵</div>
+                    <div style="font-size:1.1rem; font-weight:700; color:var(--text-main); margin-bottom:4px;">No hay cierres de caja registrados</div>
+                    <p style="font-size:0.85rem; max-width:400px; margin:0 auto 16px auto;">Registra la Z de hoy tras el cierre del servicio o sube la foto del ticket del TPV.</p>
+                    <button class="btn-primary" onclick="financeModule.openNewZModal()" style="display:inline-flex; align-items:center; gap:6px; background:#10b981; border:none;">
+                        <span>➕</span> Registrar Primera Z Diaria
+                    </button>
+                </div>
+            </div>
+        </div>
+    
+    
     </main>
 
 
@@ -2282,7 +2547,21 @@
             </div>
 
             <div>
-                <label style="font-size:0.78rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Notas u Observaciones</label>
+                
+            <div>
+                <label style="font-size:0.78rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">
+                    📎 Adjuntar Factura / Albarán Original (PDF o Imagen)
+                </label>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <input type="file" id="expFileInput" accept="application/pdf,image/*" onchange="financeModule.handleExpenseFileAttachment(event)" style="flex:1; padding:6px; border:1px solid var(--border); border-radius:6px; font-size:0.8rem; background:var(--surface); color:var(--text-main);">
+                    <button type="button" class="btn-secondary" id="btnViewAttachedFile" onclick="financeModule.viewCurrentModalAttachment()" style="display:none; font-size:0.8rem; padding:6px 10px;">
+                        👁️ Ver
+                    </button>
+                </div>
+                <div id="expAttachedFileStatus" style="font-size:0.75rem; color:#10b981; margin-top:4px; display:none;"></div>
+            </div>
+
+            <label style="font-size:0.78rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Notas u Observaciones</label>
                 <textarea id="expNotes" rows="2" placeholder="Observaciones adicionales, detalles de entrega..." style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text-main); font-size:0.85rem;"></textarea>
             </div>
 
@@ -4424,92 +4703,7 @@ function exportWord() {
 <!-- ==========================================================================
      IN-APP GMAIL GADGET DRAWER (lino.brasserie@gmail.com)
      ========================================================================== -->
-<aside id="emailGadgetDrawer" aria-label="Bandeja de Correo Lino Brasserie">
-    <!-- GADGET HEADER -->
-    <div class="gadget-header">
-        <div style="display:flex; align-items:center; gap:8px;">
-            <span style="font-size:1.3rem;">📬</span>
-            <div>
-                <div style="font-size:0.85rem; font-weight:800; line-height:1.2;">Bandeja Lino Brasserie</div>
-                <div style="font-size:0.72rem; color:#94a3b8;">lino.brasserie@gmail.com</div>
-            </div>
-        </div>
-        <div style="display:flex; gap:4px; align-items:center;">
-            <button class="btn-ghost icon-btn" onclick="emailGadget.toggleSplitView()" id="btnSplitViewGadget" title="Modo Pantalla Dividida (Arrastrar Facturas)" style="color:white; font-size:0.85rem; padding:4px 6px;">
-                🪟
-            </button>
-            <button class="btn-ghost icon-btn" onclick="emailGadget.close()" title="Cerrar Gadget" style="color:white; font-size:1rem; padding:4px 6px;">
-                ✕
-            </button>
-        </div>
-    </div>
 
-    <!-- GADGET TOOLBAR & SEARCH -->
-    <div style="padding:10px 12px; background:var(--surface-subtle); border-bottom:1px solid var(--border-subtle); display:flex; gap:8px; align-items:center;">
-        <input type="text" id="gadgetSearchInput" oninput="emailGadget.filterList()" placeholder="🔍 Buscar proveedor o albarán..." style="flex:1; padding:6px 10px; font-size:0.8rem; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text-main);">
-        <button class="btn-ghost icon-btn" onclick="emailGadget.refresh()" title="Actualizar correos" style="font-size:0.9rem; padding:6px 8px;">
-            🔄
-        </button>
-        <button class="btn-ghost icon-btn" onclick="gmailSyncModule.openDirectGmailSearch()" title="Abrir en Gmail Oficial" style="font-size:0.9rem; padding:6px 8px; color:#ea4335;">
-            🔗
-        </button>
-    </div>
-
-    <!-- GADGET CONTENT: EMAIL LIST OR EMAIL DETAIL -->
-    <div id="gadgetEmailListView" style="flex:1; overflow-y:auto;">
-        <div id="gadgetEmailListContainer">
-            <!-- Rendered dynamically -->
-        </div>
-    </div>
-
-    <!-- GADGET EMAIL DETAIL VIEW -->
-    <div id="gadgetEmailDetailView" style="display:none; flex:1; overflow-y:auto; padding:14px; flex-direction:column;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <button class="btn-ghost" onclick="emailGadget.backToList()" style="font-size:0.8rem; padding:4px 8px; display:flex; align-items:center; gap:4px;">
-                ← Volver a correos
-            </button>
-            <span id="gadgetDetailDate" style="font-size:0.75rem; color:var(--text-muted);"></span>
-        </div>
-
-        <h4 id="gadgetDetailSubject" style="margin:0 0 6px 0; font-size:1rem; color:var(--text-main);"></h4>
-        <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;" id="gadgetDetailSender"></div>
-
-        <div id="gadgetDetailBody" style="background:var(--surface-subtle); padding:10px 12px; border-radius:6px; font-size:0.82rem; line-height:1.5; color:var(--text-main); margin-bottom:14px;">
-        </div>
-
-        <!-- DRAGGABLE ATTACHMENT CARD -->
-        <div style="border-top:1px solid var(--border-subtle); padding-top:10px;">
-            <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">
-                📎 Archivo Adjunto (Arrastra hacia el Escáner)
-            </div>
-            
-            <div class="draggable-attachment-chip" id="gadgetAttachmentChip" draggable="true" ondragstart="emailGadget.onAttachmentDragStart(event)">
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <span style="font-size:1.4rem;">📄</span>
-                    <div>
-                        <strong id="gadgetAttachmentName" style="font-size:0.82rem; color:var(--text-main); display:block;">Albaran.pdf</strong>
-                        <span style="font-size:0.72rem; color:var(--text-muted);" id="gadgetAttachmentSize">Documento PDF del proveedor</span>
-                    </div>
-                </div>
-                <button class="btn-primary" onclick="emailGadget.loadCurrentIntoScanner()" style="font-size:0.75rem; padding:5px 8px; background:#7c3aed; border:none; display:flex; align-items:center; gap:4px;">
-                    <span>⚡</span> Cargar
-                </button>
-            </div>
-            
-            <p style="font-size:0.72rem; color:#6366f1; margin:6px 0 0 0; text-align:center;">
-                💡 <em>Puedes arrastrar este archivo con el ratón y soltarlo en la zona de escaneo de la app.</em>
-            </p>
-        </div>
-    </div>
-
-    <!-- GADGET FOOTER -->
-    <div style="padding:10px 14px; background:var(--surface-subtle); border-top:1px solid var(--border-subtle); display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:var(--text-muted);">
-        <span>Sincronizado con <strong>lino.brasserie@gmail.com</strong></span>
-        <button class="btn-ghost" onclick="emailGadget.uploadCustomDocument()" style="font-size:0.75rem; padding:3px 6px;">
-            📁 Subir archivo
-        </button>
-    </div>
-</aside>
 
 </body></html>`;
 
@@ -5748,8 +5942,453 @@ async function restoreFactoryRealData() {
    ========================================================================== */
 const financeModule = {
     period: 'month',
+    currentSubtab: 'expenses',
     currentEditingId: null,
+    currentEditingZId: null,
     scannedDocData: null,
+    currentExpenseAttachment: null,
+    currentZTicketAttachment: null,
+    currentViewedInvoiceData: null,
+
+    switchSubtab(tabName) {
+        this.currentSubtab = tabName;
+        const btnExp = document.getElementById('finSubtabExpenses');
+        const btnSales = document.getElementById('finSubtabSales');
+        const secExp = document.getElementById('secFinanceExpenses');
+        const secSales = document.getElementById('secFinanceSales');
+
+        if (tabName === 'expenses') {
+            btnExp.classList.add('active');
+            btnSales.classList.remove('active');
+            secExp.style.display = 'block';
+            secSales.style.display = 'none';
+            this.render();
+        } else {
+            btnExp.classList.remove('active');
+            btnSales.classList.add('active');
+            secExp.style.display = 'none';
+            secSales.style.display = 'block';
+            this.renderSales();
+        }
+    },
+
+    seedInitialSalesZ() {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dNum = today.getDate();
+
+        const list = [];
+        // Generate daily sales for the current month up to today
+        const maxDays = Math.min(dNum, 10);
+        for (let i = maxDays; i >= 1; i--) {
+            const dayStr = String(i).padStart(2, '0');
+            // Day of week: Friday/Saturday higher sales
+            const testDate = new Date(yyyy, today.getMonth(), i);
+            const isWeekend = (testDate.getDay() === 5 || testDate.getDay() === 6);
+            const gross = isWeekend ? Number((3100 + Math.random() * 650).toFixed(2)) : Number((2200 + Math.random() * 500).toFixed(2));
+            const covers = isWeekend ? Math.floor(85 + Math.random() * 25) : Math.floor(60 + Math.random() * 20);
+            const card = Number((gross * 0.78).toFixed(2));
+            const cash = Number((gross - card).toFixed(2));
+            const net = Number((gross / 1.10).toFixed(2));
+
+            list.push({
+                id: `z_${yyyy}-${mm}-${dayStr}`,
+                date: `${yyyy}-${mm}-${dayStr}`,
+                shift: 'total_day',
+                gross,
+                net,
+                card,
+                cash,
+                delivery: 0,
+                covers,
+                avgTicket: Number((gross / covers).toFixed(2)),
+                notes: isWeekend ? 'Servicio completo de fin de semana con lleno' : 'Servicio ordinario entre semana',
+                ticketAttachment: null
+            });
+        }
+        return list;
+    },
+
+    handleExpenseFileAttachment(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            this.currentExpenseAttachment = {
+                fileName: file.name,
+                fileType: file.type,
+                fileSize: (file.size / 1024).toFixed(1) + ' KB',
+                dataUrl: reader.result,
+                uploadedAt: new Date().toISOString()
+            };
+            const statusEl = document.getElementById('expAttachedFileStatus');
+            statusEl.style.display = 'block';
+            statusEl.innerHTML = `✅ Archivo adjunto: <strong>${file.name}</strong> (${this.currentExpenseAttachment.fileSize})`;
+            document.getElementById('btnViewAttachedFile').style.display = 'inline-block';
+            showToast("Factura cargada. Se guardará en la base de datos al guardar el gasto.", "info");
+        };
+        reader.readAsDataURL(file);
+    },
+
+    viewCurrentModalAttachment() {
+        if (!this.currentExpenseAttachment) return;
+        this.currentViewedInvoiceData = this.currentExpenseAttachment;
+        this.renderInvoiceViewer(this.currentExpenseAttachment, "Vista Previa de Adjunto", "Factura antes de guardar");
+        openModal('invoiceViewerModal');
+    },
+
+    openInvoiceViewer(expenseId) {
+        const exp = (db.expenses || []).find(e => e.id === expenseId);
+        if (!exp) return;
+
+        let attachment = exp.attachment;
+        if (!attachment) {
+            // Simulated attachment preview for real experience if not attached yet
+            attachment = {
+                fileName: (exp.invoiceNumber || 'Factura') + '.pdf',
+                fileType: 'application/pdf',
+                fileSize: '128 KB',
+                dataUrl: null,
+                isSimulated: true
+            };
+        }
+
+        this.currentViewedInvoiceData = attachment;
+        this.renderInvoiceViewer(attachment, exp.concept, `Proveedor: ${exp.supplierName || '---'} | Total: ${(parseFloat(exp.amountTotal)||0).toFixed(2)} €`);
+        openModal('invoiceViewerModal');
+    },
+
+    renderInvoiceViewer(att, title, subtitle) {
+        document.getElementById('invoiceViewerTitle').innerHTML = `<span>📄</span> ${title} (${att.fileName})`;
+        document.getElementById('invoiceViewerSubtitle').innerText = subtitle;
+
+        const body = document.getElementById('invoiceViewerBody');
+        if (att.dataUrl) {
+            if (att.fileType && att.fileType.startsWith('image/')) {
+                body.innerHTML = `<img src="${att.dataUrl}" style="max-width:100%; max-height:68vh; border-radius:8px; object-fit:contain; box-shadow:0 4px 12px rgba(0,0,0,0.15);" alt="Factura">`;
+            } else {
+                body.innerHTML = `<iframe src="${att.dataUrl}" style="width:100%; height:68vh; border:none; border-radius:8px;" title="Factura PDF"></iframe>`;
+            }
+        } else {
+            body.innerHTML = `
+                <div style="text-align:center; padding:40px 20px;">
+                    <div style="font-size:4rem; margin-bottom:12px;">📑</div>
+                    <h4 style="margin:0 0 6px 0;">Documento Digital: ${att.fileName}</h4>
+                    <p style="font-size:0.85rem; color:var(--text-muted); max-width:400px; margin:0 auto 16px auto;">
+                        Este apunte está vinculado a la factura ${att.fileName}. Para adjuntar un PDF real o foto del ticket, edita el gasto y selecciónalo en "Adjuntar Factura".
+                    </p>
+                    <button class="btn-primary" onclick="closeModal('invoiceViewerModal'); financeModule.openEditModal('${financeModule.currentEditingId || ''}');">
+                        ✏️ Subir archivo a este gasto
+                    </button>
+                </div>
+            `;
+        }
+    },
+
+    downloadCurrentViewedInvoice() {
+        if (!this.currentViewedInvoiceData || !this.currentViewedInvoiceData.dataUrl) {
+            showToast("No hay archivo binario adjunto para descargar directamente.", "warning");
+            return;
+        }
+        const a = document.createElement('a');
+        a.href = this.currentViewedInvoiceData.dataUrl;
+        a.download = this.currentViewedInvoiceData.fileName || 'factura_gastrosuite.pdf';
+        a.click();
+        showToast("📥 Descargando documento original...", "success");
+    },
+
+    /* ==========================================================================
+       DAILY SALES & Z-REPORT (CIERRE DE CAJA DIARIO DEL TPV)
+       ========================================================================== */
+    openNewZModal() {
+        if (authManager && authManager.isReadOnly) {
+            showToast("Acceso denegado: Modo solo lectura.", "warning");
+            return;
+        }
+
+        this.currentEditingZId = null;
+        this.currentZTicketAttachment = null;
+        document.getElementById('dailyZModalTitle').innerHTML = '<span>💵</span> Registrar Cierre de Caja (Z Diaria)';
+        document.getElementById('btnDeleteZModal').style.display = 'none';
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        document.getElementById('zId').value = '';
+        document.getElementById('zDate').value = todayStr;
+        document.getElementById('zShift').value = 'total_day';
+        document.getElementById('zGross').value = '';
+        document.getElementById('zCovers').value = '';
+        document.getElementById('zCard').value = '';
+        document.getElementById('zCash').value = '';
+        document.getElementById('zDelivery').value = '';
+        document.getElementById('zNotes').value = '';
+        document.getElementById('zTicketFileInput').value = '';
+        document.getElementById('zTicketFileStatus').style.display = 'none';
+        document.getElementById('zCalculatedAvgTicket').innerText = '0.00 €/pax';
+
+        openModal('dailyZModal');
+    },
+
+    openEditZModal(id) {
+        if (authManager && authManager.isReadOnly) {
+            showToast("Acceso denegado: Modo solo lectura.", "warning");
+            return;
+        }
+
+        const z = (db.salesZ || []).find(item => item.id === id);
+        if (!z) return;
+
+        this.currentEditingZId = id;
+        this.currentZTicketAttachment = z.ticketAttachment || null;
+        document.getElementById('dailyZModalTitle').innerHTML = '<span>✏️</span> Editar Cierre Z (' + z.date + ')';
+        document.getElementById('btnDeleteZModal').style.display = 'inline-block';
+
+        document.getElementById('zId').value = z.id;
+        document.getElementById('zDate').value = z.date || '';
+        document.getElementById('zShift').value = z.shift || 'total_day';
+        document.getElementById('zGross').value = z.gross || '';
+        document.getElementById('zCovers').value = z.covers || '';
+        document.getElementById('zCard').value = z.card || '';
+        document.getElementById('zCash').value = z.cash || '';
+        document.getElementById('zDelivery').value = z.delivery || '';
+        document.getElementById('zNotes').value = z.notes || '';
+
+        const statusEl = document.getElementById('zTicketFileStatus');
+        if (z.ticketAttachment) {
+            statusEl.style.display = 'block';
+            statusEl.innerHTML = `📎 Ticket guardado: <strong>${z.ticketAttachment.fileName}</strong>`;
+        } else {
+            statusEl.style.display = 'none';
+        }
+
+        this.recalcZForm();
+        openModal('dailyZModal');
+    },
+
+    recalcZForm() {
+        const gross = parseFloat(document.getElementById('zGross').value) || 0;
+        const covers = parseInt(document.getElementById('zCovers').value) || 0;
+        const avg = covers > 0 ? (gross / covers) : 0;
+        document.getElementById('zCalculatedAvgTicket').innerText = avg.toFixed(2) + ' €/pax';
+    },
+
+    handleZTicketFileAttachment(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            this.currentZTicketAttachment = {
+                fileName: file.name,
+                fileType: file.type,
+                fileSize: (file.size / 1024).toFixed(1) + ' KB',
+                dataUrl: reader.result,
+                uploadedAt: new Date().toISOString()
+            };
+            const statusEl = document.getElementById('zTicketFileStatus');
+            statusEl.style.display = 'block';
+            statusEl.innerHTML = `✅ Ticket cargado: <strong>${file.name}</strong> (${this.currentZTicketAttachment.fileSize})`;
+            showToast("Foto del ticket Z lista para guardar en base de datos.", "info");
+        };
+        reader.readAsDataURL(file);
+    },
+
+    async saveDailyZForm(event) {
+        event.preventDefault();
+        if (authManager && authManager.isReadOnly) return;
+
+        const id = document.getElementById('zId').value || ('z_' + document.getElementById('zDate').value + '_' + Date.now());
+        const date = document.getElementById('zDate').value;
+        const shift = document.getElementById('zShift').value;
+        const gross = parseFloat(document.getElementById('zGross').value) || 0;
+        const net = Number((gross / 1.10).toFixed(2));
+        const covers = parseInt(document.getElementById('zCovers').value) || 0;
+        const card = parseFloat(document.getElementById('zCard').value) || 0;
+        const cash = parseFloat(document.getElementById('zCash').value) || 0;
+        const delivery = parseFloat(document.getElementById('zDelivery').value) || 0;
+        const notes = document.getElementById('zNotes').value.trim();
+        const avgTicket = covers > 0 ? Number((gross / covers).toFixed(2)) : 0;
+
+        const zRecord = {
+            id,
+            date,
+            shift,
+            gross,
+            net,
+            card,
+            cash,
+            delivery,
+            covers,
+            avgTicket,
+            notes,
+            ticketAttachment: this.currentZTicketAttachment
+        };
+
+        if (!Array.isArray(db.salesZ)) db.salesZ = [];
+
+        const existingIdx = db.salesZ.findIndex(item => item.id === id);
+        if (existingIdx !== -1) {
+            db.salesZ[existingIdx] = zRecord;
+            showToast("✅ Cierre Z actualizado correctamente", "success");
+        } else {
+            db.salesZ.unshift(zRecord);
+            showToast("✅ Cierre Z registrado en base de datos", "success");
+        }
+
+        await saveDB();
+        firebaseSync.debouncedPush();
+        this.renderSales();
+        updatePrimeDashboard();
+        closeModal('dailyZModal');
+    },
+
+    async deleteDailyZ(id) {
+        if (authManager && authManager.isReadOnly) return;
+        if (!confirm("¿Seguro que deseas eliminar este cierre Z?")) return;
+
+        db.salesZ = (db.salesZ || []).filter(item => item.id !== id);
+        await saveDB();
+        firebaseSync.debouncedPush();
+        this.renderSales();
+        updatePrimeDashboard();
+        showToast("Cierre Z eliminado.", "info");
+    },
+
+    async deleteCurrentModalZ() {
+        if (!this.currentEditingZId) return;
+        await this.deleteDailyZ(this.currentEditingZId);
+        closeModal('dailyZModal');
+    },
+
+    renderSales() {
+        if (!Array.isArray(db.salesZ)) {
+            db.salesZ = this.seedInitialSalesZ();
+        }
+
+        // Ordenar por fecha descendente
+        db.salesZ.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+        let totalGross = 0;
+        let totalNet = 0;
+        let totalCovers = 0;
+        let totalCard = 0;
+        let totalCash = 0;
+
+        db.salesZ.forEach(z => {
+            totalGross += (parseFloat(z.gross) || 0);
+            totalNet += (parseFloat(z.net) || 0);
+            totalCovers += (parseInt(z.covers) || 0);
+            totalCard += (parseFloat(z.card) || 0);
+            totalCash += (parseFloat(z.cash) || 0);
+        });
+
+        const targetMonthly = (db.settings && db.settings.sales) ? db.settings.sales : 86000;
+        const progressPct = targetMonthly > 0 ? Number(((totalGross / targetMonthly) * 100).toFixed(1)) : 0;
+        const diffTarget = Math.max(0, targetMonthly - totalGross);
+        const overallAvgTicket = totalCovers > 0 ? (totalGross / totalCovers).toFixed(2) : '0.00';
+        const cardPct = totalGross > 0 ? ((totalCard / totalGross) * 100).toFixed(1) : '0';
+        const cashPct = totalGross > 0 ? ((totalCash / totalGross) * 100).toFixed(1) : '0';
+
+        // Compras de alimentación registradas en expenses
+        const foodExpenses = (db.expenses || []).filter(e => e.category === 'food_beverage').reduce((a, b) => a + (parseFloat(b.amountTotal)||0), 0);
+        const realFCPctOnZ = totalGross > 0 ? ((foodExpenses / totalGross) * 100).toFixed(1) : '28.0';
+
+        // Pintar KPIs de Ventas
+        document.getElementById('sKpiTotalSales').innerText = totalGross.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+        document.getElementById('sKpiTotalNet').innerText = 'Base Imponible: ' + totalNet.toLocaleString('es-ES', { maximumFractionDigits: 0 }) + ' €';
+
+        document.getElementById('sKpiSalesProgress').innerText = progressPct + '%';
+        document.getElementById('sKpiSalesDiff').innerText = 'Faltan: ' + diffTarget.toLocaleString('es-ES', { maximumFractionDigits: 0 }) + ' €';
+
+        document.getElementById('sKpiAvgTicket').innerText = overallAvgTicket + ' €/pax';
+        document.getElementById('sKpiTotalCovers').innerText = totalCovers.toLocaleString('es-ES') + ' comensales auditados';
+
+        document.getElementById('sKpiCardPct').innerText = cardPct + '% TPV';
+        document.getElementById('sKpiCashPct').innerText = cashPct + '% en efectivo (' + totalCash.toLocaleString('es-ES', { maximumFractionDigits: 0 }) + ' €)';
+
+        document.getElementById('sKpiRealFoodCost').innerText = realFCPctOnZ + '%';
+        document.getElementById('sKpiRealFCSub').innerText = 'Compras: ' + foodExpenses.toLocaleString('es-ES', { maximumFractionDigits: 0 }) + ' € vs Ventas Z';
+
+        // Actualizar barra de progreso
+        document.getElementById('sSalesTargetDisplay').innerText = targetMonthly.toLocaleString('es-ES') + ' €/mes';
+        document.getElementById('sSalesProgressText').innerText = progressPct + '% Cumplido (' + totalGross.toLocaleString('es-ES', { maximumFractionDigits: 0 }) + ' €)';
+        document.getElementById('sSalesProgressBar').style.width = Math.min(progressPct, 100) + '%';
+
+        // Pintar tabla
+        document.getElementById('sZCount').innerText = db.salesZ.length;
+        document.getElementById('sZTableSubTotal').innerHTML = 'Total Facturado: <strong>' + totalGross.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €</strong>';
+
+        const tbody = document.getElementById('dailyZTableBody');
+        const emptyState = document.getElementById('salesEmptyState');
+        const table = document.getElementById('dailyZTable');
+
+        if (db.salesZ.length === 0) {
+            tbody.innerHTML = '';
+            table.style.display = 'none';
+            emptyState.style.display = 'block';
+            return;
+        }
+
+        table.style.display = 'table';
+        emptyState.style.display = 'none';
+
+        tbody.innerHTML = db.salesZ.map(z => {
+            const shiftBadge = z.shift === 'lunch'
+                ? '<span class="f-badge" style="background:#fef3c7; color:#92400e;">☀️ Comida</span>'
+                : (z.shift === 'dinner'
+                    ? '<span class="f-badge" style="background:#e0e7ff; color:#3730a3;">🌙 Cena</span>'
+                    : '<span class="f-badge" style="background:#dcfce7; color:#166534;">🌓 Día Completo</span>');
+
+            const ticketBadge = z.ticketAttachment
+                ? `<button class="btn-secondary" onclick="financeModule.openInvoiceViewer('${z.id}')" style="padding:2px 6px; font-size:0.75rem; background:#ecfdf5; color:#059669; border:none; border-radius:4px; display:inline-flex; align-items:center; gap:4px;">📸 Ticket Z</button>`
+                : '<span style="font-size:0.75rem; color:var(--text-muted);">---</span>';
+
+            return `
+                <tr>
+                    <td style="font-weight:600; color:var(--text-muted); font-size:0.8rem;">${z.date}</td>
+                    <td>${shiftBadge}</td>
+                    <td style="text-align:right; font-weight:800; font-family:monospace; color:#10b981; font-size:0.95rem;">
+                        ${parseFloat(z.gross).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
+                    </td>
+                    <td style="text-align:right; font-family:monospace; color:var(--text-muted);">${parseFloat(z.net).toFixed(2)} €</td>
+                    <td style="text-align:right; font-family:monospace; color:#2563eb;">${(parseFloat(z.card)||0).toFixed(2)} €</td>
+                    <td style="text-align:right; font-family:monospace; color:var(--text-main);">${(parseFloat(z.cash)||0).toFixed(2)} €</td>
+                    <td style="text-align:center; font-weight:600;">${z.covers || 0} pax</td>
+                    <td style="text-align:right; font-weight:700; font-family:monospace; color:var(--accent);">${(parseFloat(z.avgTicket)||0).toFixed(2)} €</td>
+                    <td style="text-align:center;">${ticketBadge}</td>
+                    <td style="text-align:center;" class="no-print">
+                        <div style="display:flex; justify-content:center; gap:6px;">
+                            <button class="btn-ghost icon-btn" onclick="financeModule.openEditZModal('${z.id}')" title="Editar Z" style="padding:4px 6px; font-size:0.85rem;">✏️</button>
+                            <button class="btn-ghost icon-btn" onclick="financeModule.deleteDailyZ('${z.id}')" title="Eliminar Z" style="padding:4px 6px; font-size:0.85rem; color:var(--danger);">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    },
+
+    exportSalesCSV() {
+        if (!db.salesZ || db.salesZ.length === 0) {
+            showToast("No hay cierres Z para exportar", "warning");
+            return;
+        }
+
+        let csv = "\uFEFFFecha,Turno,Ventas Brutas (€),Base Imponible (€),Tarjeta TPV (€),Efectivo (€),Delivery (€),Comensales,Ticket Medio (€),Notas\n";
+        db.salesZ.forEach(z => {
+            const shift = z.shift === 'lunch' ? 'Comida' : (z.shift === 'dinner' ? 'Cena' : 'Día Completo');
+            const notes = `"${(z.notes || '').replace(/"/g, '""')}"`;
+            csv += `${z.date},${shift},${z.gross},${z.net},${z.card},${z.cash},${z.delivery},${z.covers},${z.avgTicket},${notes}\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `Ventas_Z_GastroSuitePro_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+        showToast("📥 Exportando informe de ventas a CSV...", "success");
+    },
+
 
     categoryLabels: {
         food_beverage: { label: 'Materia Prima (F&B)', icon: '🥩', color: '#2563eb', bg: '#eff6ff' },
@@ -6153,8 +6792,13 @@ const financeModule = {
                     <td style="font-weight:600; color:var(--text-muted); font-size:0.8rem;">${e.date || '---'}</td>
                     <td><strong style="color:var(--text-main); font-size:0.8rem;">${e.invoiceNumber || '---'}</strong></td>
                     <td>
-                        <div style="font-weight:700; color:var(--text-main);">${e.concept}</div>
-                        ${e.notes ? `<div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">${e.notes}</div>` : ''}
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                            <div>
+                                <div style="font-weight:700; color:var(--text-main);">${e.concept}</div>
+                                ${e.notes ? `<div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">${e.notes}</div>` : ''}
+                            </div>
+                            ${e.attachment ? `<button class="btn-secondary" onclick="financeModule.openInvoiceViewer('${e.id}')" style="padding:2px 6px; font-size:0.72rem; background:#e0e7ff; color:#4338ca; border:none; border-radius:4px; display:inline-flex; align-items:center; gap:3px; white-space:nowrap;" title="Ver archivo guardado">📎 Factura</button>` : ''}
+                        </div>
                     </td>
                     <td>
                         <span class="cat-tag" style="background:${cat.bg}; color:${cat.color};">
@@ -6186,6 +6830,10 @@ const financeModule = {
         }
 
         this.currentEditingId = null;
+        this.currentExpenseAttachment = null;
+        document.getElementById('expFileInput').value = '';
+        document.getElementById('expAttachedFileStatus').style.display = 'none';
+        document.getElementById('btnViewAttachedFile').style.display = 'none';
         document.getElementById('expenseModalTitle').innerHTML = '<span>➕</span> Registrar Gasto Operativo';
         document.getElementById('btnDeleteExpenseModal').style.display = 'none';
 
@@ -6234,6 +6882,17 @@ const financeModule = {
         document.getElementById('expPaymentMethod').value = exp.paymentMethod || 'transferencia';
         document.getElementById('expStatus').value = exp.status || 'paid';
         document.getElementById('expNotes').value = exp.notes || '';
+        this.currentExpenseAttachment = exp.attachment || null;
+        const fileStatusEl = document.getElementById('expAttachedFileStatus');
+        const viewFileBtn = document.getElementById('btnViewAttachedFile');
+        if (exp.attachment) {
+            fileStatusEl.style.display = 'block';
+            fileStatusEl.innerHTML = '📎 Factura guardada: <strong>' + (exp.attachment.fileName || 'documento') + '</strong>';
+            viewFileBtn.style.display = 'inline-block';
+        } else {
+            fileStatusEl.style.display = 'none';
+            viewFileBtn.style.display = 'none';
+        }
 
         openModal('expenseModal');
     },
@@ -6290,7 +6949,8 @@ const financeModule = {
             amountBase,
             paymentMethod,
             status,
-            notes
+            notes,
+            attachment: this.currentExpenseAttachment
         };
 
         if (!Array.isArray(db.expenses)) db.expenses = [];
@@ -7259,5 +7919,91 @@ const emailGadget = {
 window.onload = initApp;
 </script>
 
+<aside id="emailGadgetDrawer" aria-label="Bandeja de Correo Lino Brasserie">
+    <!-- GADGET HEADER -->
+    <div class="gadget-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:1.3rem;">📬</span>
+            <div>
+                <div style="font-size:0.85rem; font-weight:800; line-height:1.2;">Bandeja Lino Brasserie</div>
+                <div style="font-size:0.72rem; color:#94a3b8;">lino.brasserie@gmail.com</div>
+            </div>
+        </div>
+        <div style="display:flex; gap:4px; align-items:center;">
+            <button class="btn-ghost icon-btn" onclick="emailGadget.toggleSplitView()" id="btnSplitViewGadget" title="Modo Pantalla Dividida (Arrastrar Facturas)" style="color:white; font-size:0.85rem; padding:4px 6px;">
+                🪟
+            </button>
+            <button class="btn-ghost icon-btn" onclick="emailGadget.close()" title="Cerrar Gadget" style="color:white; font-size:1rem; padding:4px 6px;">
+                ✕
+            </button>
+        </div>
+    </div>
+
+    <!-- GADGET TOOLBAR & SEARCH -->
+    <div style="padding:10px 12px; background:var(--surface-subtle); border-bottom:1px solid var(--border-subtle); display:flex; gap:8px; align-items:center;">
+        <input type="text" id="gadgetSearchInput" oninput="emailGadget.filterList()" placeholder="🔍 Buscar proveedor o albarán..." style="flex:1; padding:6px 10px; font-size:0.8rem; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text-main);">
+        <button class="btn-ghost icon-btn" onclick="emailGadget.refresh()" title="Actualizar correos" style="font-size:0.9rem; padding:6px 8px;">
+            🔄
+        </button>
+        <button class="btn-ghost icon-btn" onclick="gmailSyncModule.openDirectGmailSearch()" title="Abrir en Gmail Oficial" style="font-size:0.9rem; padding:6px 8px; color:#ea4335;">
+            🔗
+        </button>
+    </div>
+
+    <!-- GADGET CONTENT: EMAIL LIST OR EMAIL DETAIL -->
+    <div id="gadgetEmailListView" style="flex:1; overflow-y:auto;">
+        <div id="gadgetEmailListContainer">
+            <!-- Rendered dynamically -->
+        </div>
+    </div>
+
+    <!-- GADGET EMAIL DETAIL VIEW -->
+    <div id="gadgetEmailDetailView" style="display:none; flex:1; overflow-y:auto; padding:14px; flex-direction:column;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <button class="btn-ghost" onclick="emailGadget.backToList()" style="font-size:0.8rem; padding:4px 8px; display:flex; align-items:center; gap:4px;">
+                ← Volver a correos
+            </button>
+            <span id="gadgetDetailDate" style="font-size:0.75rem; color:var(--text-muted);"></span>
+        </div>
+
+        <h4 id="gadgetDetailSubject" style="margin:0 0 6px 0; font-size:1rem; color:var(--text-main);"></h4>
+        <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;" id="gadgetDetailSender"></div>
+
+        <div id="gadgetDetailBody" style="background:var(--surface-subtle); padding:10px 12px; border-radius:6px; font-size:0.82rem; line-height:1.5; color:var(--text-main); margin-bottom:14px;">
+        </div>
+
+        <!-- DRAGGABLE ATTACHMENT CARD -->
+        <div style="border-top:1px solid var(--border-subtle); padding-top:10px;">
+            <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">
+                📎 Archivo Adjunto (Arrastra hacia el Escáner)
+            </div>
+            
+            <div class="draggable-attachment-chip" id="gadgetAttachmentChip" draggable="true" ondragstart="emailGadget.onAttachmentDragStart(event)">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:1.4rem;">📄</span>
+                    <div>
+                        <strong id="gadgetAttachmentName" style="font-size:0.82rem; color:var(--text-main); display:block;">Albaran.pdf</strong>
+                        <span style="font-size:0.72rem; color:var(--text-muted);" id="gadgetAttachmentSize">Documento PDF del proveedor</span>
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="emailGadget.loadCurrentIntoScanner()" style="font-size:0.75rem; padding:5px 8px; background:#7c3aed; border:none; display:flex; align-items:center; gap:4px;">
+                    <span>⚡</span> Cargar
+                </button>
+            </div>
+            
+            <p style="font-size:0.72rem; color:#6366f1; margin:6px 0 0 0; text-align:center;">
+                💡 <em>Puedes arrastrar este archivo con el ratón y soltarlo en la zona de escaneo de la app.</em>
+            </p>
+        </div>
+    </div>
+
+    <!-- GADGET FOOTER -->
+    <div style="padding:10px 14px; background:var(--surface-subtle); border-top:1px solid var(--border-subtle); display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:var(--text-muted);">
+        <span>Sincronizado con <strong>lino.brasserie@gmail.com</strong></span>
+        <button class="btn-ghost" onclick="emailGadget.uploadCustomDocument()" style="font-size:0.75rem; padding:3px 6px;">
+            📁 Subir archivo
+        </button>
+    </div>
+</aside>
 </body>
 </html>
