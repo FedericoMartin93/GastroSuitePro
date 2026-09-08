@@ -707,6 +707,193 @@
             body.print-ticket #mainContainer { display: none !important; }
             body.print-ticket #ticketContainer { display: block !important; color: black !important; }
         }
+    
+        /* ==========================================================================
+           FINANCE & EXPENSES MODULE STYLES
+           ========================================================================== */
+        .finance-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .finance-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .finance-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        .finance-card .f-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .finance-card .f-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1.2;
+        }
+        .finance-card .f-sub {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .f-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+        .f-badge-success { background: #dcfce7; color: #166534; }
+        .f-badge-warning { background: #fef9c3; color: #854d0e; }
+        .f-badge-danger { background: #fee2e2; color: #991b1b; }
+        .f-badge-info { background: #e0f2fe; color: #075985; }
+        .f-badge-purple { background: #f3e8ff; color: #6b21a8; }
+
+        /* Multi-segment expense bar */
+        .cost-split-bar {
+            width: 100%;
+            height: 16px;
+            background: var(--border-subtle);
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            margin: 10px 0;
+        }
+        .cost-seg {
+            height: 100%;
+            transition: width 0.4s ease;
+        }
+        .cost-seg-food { background: #3b82f6; }
+        .cost-seg-labor { background: #ec4899; }
+        .cost-seg-util { background: #f59e0b; }
+        .cost-seg-rent { background: #8b5cf6; }
+        .cost-seg-other { background: #64748b; }
+        .cost-seg-profit { background: #10b981; }
+
+        /* Filter bar */
+        .finance-filter-bar {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .finance-pill-group {
+            display: flex;
+            background: var(--surface-subtle);
+            padding: 3px;
+            border-radius: 8px;
+            border: 1px solid var(--border-subtle);
+        }
+        .finance-pill {
+            padding: 6px 12px;
+            border: none;
+            background: transparent;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .finance-pill.active {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .finance-pill:hover:not(.active) {
+            color: var(--text-main);
+            background: rgba(0,0,0,0.05);
+        }
+
+        /* Expense table */
+        .expense-table-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        .expense-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            text-align: left;
+        }
+        .expense-table th {
+            background: var(--surface-subtle);
+            padding: 12px 14px;
+            font-weight: 700;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+            text-transform: uppercase;
+            font-size: 0.72rem;
+            letter-spacing: 0.5px;
+        }
+        .expense-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border-subtle);
+            vertical-align: middle;
+        }
+        .expense-table tr:hover {
+            background: rgba(79, 70, 229, 0.03);
+        }
+        .cat-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* OCR Dropzone */
+        .ocr-dropzone {
+            border: 2px dashed #6366f1;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            background: rgba(99, 102, 241, 0.04);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .ocr-dropzone:hover {
+            background: rgba(99, 102, 241, 0.08);
+            border-color: #4f46e5;
+        }
+
+        body.read-only-mode #btnNewExpense,
+        body.read-only-mode #btnScanDoc,
+        body.read-only-mode .expense-action-btn {
+            display: none !important;
+        }
+
     </style>
 </head>
 <body>
@@ -844,6 +1031,9 @@
         </button>
         <button class="nav-tab-btn" id="tabNavChef" onclick="appNav.switchView('chef')">
             🍽️ <span>Chef Manager</span>
+        </button>
+                <button class="nav-tab-btn" id="tabNavFinance" onclick="appNav.switchView('finance')">
+            💰 <span>Finanzas y Gastos</span>
         </button>
         <button class="nav-tab-btn" id="tabNavSchedule" onclick="appNav.switchView('schedule')">
             📅 <span>Gestor Horarios</span>
@@ -1390,6 +1580,187 @@
         </div>
     </main>
 
+    <!-- ==========================================================================
+         VIEW 4: CONTROL DE FINANZAS Y GASTOS OPERATIVOS (DIARIOS / SEMANALES)
+         ========================================================================== -->
+    <main class="app-view" id="viewFinance">
+        <!-- HEADER WITH SUMMARY AND QUICK ACTIONS -->
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; flex-wrap:wrap; gap:16px;">
+            <div>
+                <span style="font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; color:var(--accent); font-weight:800;">Módulo Económico & Compras</span>
+                <h2 style="margin:2px 0 6px 0; font-size:1.8rem; color:var(--text-main);">Control de Finanzas y Gastos Operativos</h2>
+                <p style="margin:0; font-size:0.85rem; color:var(--text-muted);">
+                    Registra facturas, albaranes de proveedores y costes estructurales sin entrar a los escandallos. Monitoriza tu Food Cost Real y margen EBITDA diario/semanal.
+                </p>
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <button class="btn-secondary" onclick="financeModule.openScanModal()" id="btnScanDoc" style="background:#7c3aed; color:white; border:none; display:flex; align-items:center; gap:6px; box-shadow:0 2px 4px rgba(124,58,237,0.3);">
+                    <span>📸</span> <strong>Escanear Albarán (IA)</strong>
+                </button>
+                <button class="btn-primary" onclick="financeModule.openNewModal()" id="btnNewExpense" style="display:flex; align-items:center; gap:6px;">
+                    <span>➕</span> <strong>Registrar Gasto</strong>
+                </button>
+                <button class="btn-ghost icon-btn" onclick="financeModule.exportCSV()" title="Exportar gastos a Excel / CSV">
+                    📥 CSV
+                </button>
+            </div>
+        </div>
+
+        <!-- PERIOD AND CATEGORY FILTER BAR -->
+        <div class="finance-filter-bar no-print">
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                <span style="font-size:0.8rem; font-weight:700; color:var(--text-muted);">Periodo:</span>
+                <div class="finance-pill-group">
+                    <button class="finance-pill" onclick="financeModule.setPeriod('today')" id="fPill-today">Hoy</button>
+                    <button class="finance-pill" onclick="financeModule.setPeriod('week')" id="fPill-week">Esta Semana</button>
+                    <button class="finance-pill active" onclick="financeModule.setPeriod('month')" id="fPill-month">Este Mes</button>
+                    <button class="finance-pill" onclick="financeModule.setPeriod('last_month')" id="fPill-last_month">Mes Anterior</button>
+                    <button class="finance-pill" onclick="financeModule.setPeriod('all')" id="fPill-all">Todo</button>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <select id="financeFilterCat" onchange="financeModule.render()" style="padding:6px 10px; border-radius:6px; border:1px solid var(--border); font-size:0.8rem; background:var(--surface); color:var(--text-main);">
+                    <option value="all">📁 Todas las Categorías</option>
+                    <option value="food_beverage">🥩 Materia Prima (F&B)</option>
+                    <option value="labor_extra">👥 Personal Extra / Nóminas</option>
+                    <option value="utilities">⚡ Suministros (Luz, Gas, Agua)</option>
+                    <option value="rent_fixed">🏢 Alquiler y Estructurales</option>
+                    <option value="maintenance">🔧 Mantenimiento y Averías</option>
+                    <option value="supplies">🧼 Limpieza y Menaje</option>
+                    <option value="marketing">📢 Marketing y Comisiones</option>
+                    <option value="other">📦 Otros Gastos</option>
+                </select>
+
+                <select id="financeFilterSupplier" onchange="financeModule.render()" style="padding:6px 10px; border-radius:6px; border:1px solid var(--border); font-size:0.8rem; background:var(--surface); color:var(--text-main); max-width:180px;">
+                    <option value="all">🏢 Todos los Proveedores</option>
+                </select>
+
+                <input type="text" id="financeSearchInput" oninput="financeModule.render()" placeholder="🔍 Buscar concepto o doc..." style="padding:6px 10px; border-radius:6px; border:1px solid var(--border); font-size:0.8rem; background:var(--surface); color:var(--text-main); width:180px;">
+            </div>
+        </div>
+
+        <!-- KPIS DASHBOARD -->
+        <div class="finance-kpi-grid">
+            <div class="finance-card">
+                <div class="f-label">
+                    <span>Total Gastos Periodo</span>
+                    <span>💳</span>
+                </div>
+                <div class="f-value" id="fKpiTotalExpenses">0 €</div>
+                <div class="f-sub" id="fKpiTotalSub">Base: 0 € | IVA: 0 €</div>
+            </div>
+
+            <div class="finance-card">
+                <div class="f-label">
+                    <span>Compras Materia Prima</span>
+                    <span>🥩</span>
+                </div>
+                <div class="f-value" id="fKpiFoodExpenses" style="color:#2563eb;">0 €</div>
+                <div class="f-sub" id="fKpiFoodCostPct">0% sobre ventas estimadas</div>
+            </div>
+
+            <div class="finance-card">
+                <div class="f-label">
+                    <span>Food Cost: Real vs Teórico</span>
+                    <span>⚖️</span>
+                </div>
+                <div class="f-value" id="fKpiFCDeviation" style="font-size:1.6rem;">0% <span style="font-size:0.85rem; font-weight:400; color:var(--text-muted);">(Teór: 28%)</span></div>
+                <div class="f-sub" id="fKpiFCStatus"><span class="f-badge f-badge-success">En rango óptimo</span></div>
+            </div>
+
+            <div class="finance-card">
+                <div class="f-label">
+                    <span>Coste Personal Total</span>
+                    <span>👥</span>
+                </div>
+                <div class="f-value" id="fKpiLaborTotal" style="color:#db2777;">0 €</div>
+                <div class="f-sub" id="fKpiLaborSub">Cuadrante + Extras registrados</div>
+            </div>
+
+            <div class="finance-card">
+                <div class="f-label">
+                    <span>Margen EBITDA Estimado</span>
+                    <span>📈</span>
+                </div>
+                <div class="f-value" id="fKpiEbitda" style="color:var(--success);">0 €</div>
+                <div class="f-sub" id="fKpiEbitdaPct">0% margen neto operativo</div>
+            </div>
+        </div>
+
+        <!-- VISUAL COST DISTRIBUTION BAR -->
+        <div class="card" style="margin-bottom:20px; padding:16px 20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <h4 style="margin:0; font-size:0.9rem; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted);">
+                    Distribución Porcentual del Gasto vs Ventas Estimadas (<span id="fDistSalesDisplay">86.000 €/mes</span>)
+                </h4>
+                <span id="fDistSummaryText" style="font-size:0.8rem; font-weight:700; color:var(--text-main);">Gastos: 0% | Margen: 100%</span>
+            </div>
+            
+            <div class="cost-split-bar">
+                <div id="costBarFood" class="cost-seg cost-seg-food" style="width:25%;" title="Materia Prima"></div>
+                <div id="costBarLabor" class="cost-seg cost-seg-labor" style="width:25%;" title="Coste Personal"></div>
+                <div id="costBarUtil" class="cost-seg cost-seg-util" style="width:5%;" title="Suministros"></div>
+                <div id="costBarRent" class="cost-seg cost-seg-rent" style="width:10%;" title="Alquiler y Fijos"></div>
+                <div id="costBarOther" class="cost-seg cost-seg-other" style="width:5%;" title="Otros"></div>
+                <div id="costBarProfit" class="cost-seg cost-seg-profit" style="width:30%;" title="Margen EBITDA"></div>
+            </div>
+
+            <div style="display:flex; gap:16px; flex-wrap:wrap; font-size:0.75rem; color:var(--text-muted); margin-top:8px;">
+                <span style="display:flex; align-items:center; gap:5px;"><span style="width:8px; height:8px; background:#3b82f6; border-radius:2px;"></span> Comida & Bebida (<span id="pctFood">0%</span>)</span>
+                <span style="display:flex; align-items:center; gap:5px;"><span style="width:8px; height:8px; background:#ec4899; border-radius:2px;"></span> Personal (<span id="pctLabor">0%</span>)</span>
+                <span style="display:flex; align-items:center; gap:5px;"><span style="width:8px; height:8px; background:#f59e0b; border-radius:2px;"></span> Suministros (<span id="pctUtil">0%</span>)</span>
+                <span style="display:flex; align-items:center; gap:5px;"><span style="width:8px; height:8px; background:#8b5cf6; border-radius:2px;"></span> Alquiler & Fijos (<span id="pctRent">0%</span>)</span>
+                <span style="display:flex; align-items:center; gap:5px;"><span style="width:8px; height:8px; background:#64748b; border-radius:2px;"></span> Otros (<span id="pctOther">0%</span>)</span>
+                <span style="display:flex; align-items:center; gap:5px;"><span style="width:8px; height:8px; background:#10b981; border-radius:2px;"></span> Beneficio Operativo (<span id="pctProfit">0%</span>)</span>
+            </div>
+        </div>
+
+        <!-- EXPENSE RECORDS TABLE -->
+        <div class="expense-table-container">
+            <div style="padding:14px 18px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); background:var(--surface);">
+                <div style="font-weight:700; font-size:0.95rem;">
+                    📋 Registro Detallado de Gastos (<span id="fExpenseCount">0</span> apuntes)
+                </div>
+                <div style="font-size:0.8rem; color:var(--text-muted);" id="fTableSubTotal">
+                    Suma mostrada: <strong>0 €</strong>
+                </div>
+            </div>
+
+            <div style="overflow-x:auto;">
+                <table class="expense-table" id="financeTable">
+                    <thead>
+                        <tr>
+                            <th style="width:105px;">Fecha</th>
+                            <th style="width:110px;">Doc / Ref</th>
+                            <th>Concepto</th>
+                            <th style="width:160px;">Categoría</th>
+                            <th style="width:150px;">Proveedor</th>
+                            <th style="width:90px; text-align:right;">Base</th>
+                            <th style="width:70px; text-align:center;">IVA</th>
+                            <th style="width:100px; text-align:right;">Total</th>
+                            <th style="width:95px; text-align:center;">Estado</th>
+                            <th style="width:90px; text-align:center;" class="no-print">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="financeTableBody">
+                        <!-- Filled dynamically -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="financeEmptyState" style="display:none; padding:40px 20px; text-align:center; color:var(--text-muted);">
+                <div style="font-size:2.5rem; margin-bottom:8px;">🧾</div>
+                <div style="font-size:1.1rem; font-weight:700; color:var(--text-main); margin-bottom:4px;">No hay gastos registrados en este periodo</div>
+                <p style="font-size:0.85rem; max-width:400px; margin:0 auto 16px auto;">Comienza añadiendo una compra a un proveedor, factura de suministros o escaneando un albarán con IA.</p>
+                <button class="btn-primary" onclick="financeModule.openNewModal()" style="display:inline-flex; align-items:center; gap:6px;">
+                    <span>➕</span> Registrar Primer Gasto
+                </button>
+            </div>
+        </div>
+    </main>
+
+
 </div>
 
 <!-- ==========================================================================
@@ -1717,6 +2088,245 @@
 <!-- ==========================================================================
      JAVASCRIPT APPLICATION ENGINE
      ========================================================================== -->
+
+<!-- ==========================================================================
+     MODAL: REGISTRAR / EDITAR GASTO OPERATIVO
+     ========================================================================== -->
+<div class="modal-overlay" id="expenseModal" style="display:none; z-index:9999;">
+    <div class="modal-card" style="max-width:600px; width:95%; max-height:90vh; overflow-y:auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:12px; margin-bottom:16px;">
+            <h3 id="expenseModalTitle" style="margin:0; font-size:1.2rem; color:var(--text-main); display:flex; align-items:center; gap:8px;">
+                <span>➕</span> Registrar Gasto Operativo
+            </h3>
+            <button class="btn-ghost icon-btn" onclick="closeModal('expenseModal')">✕</button>
+        </div>
+
+        <form id="expenseForm" onsubmit="financeModule.saveExpenseForm(event)" style="display:flex; flex-direction:column; gap:14px;">
+            <input type="hidden" id="expId">
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                <div>
+                    <label style="font-size:0.78rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Fecha *</label>
+                    <input type="date" id="expDate" required style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text-main); font-size:0.9rem;">
+                </div>
+                <div>
+                    <label style="font-size:0.78rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Nº Albarán / Factura</label>
+                    <input type="text" id="expInvoice" placeholder="Ej: ALB-2026-44" style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text-main); font-size:0.9rem;">
+                </div>
+            </div>
+
+            <div>
+                <label style="font-size:0.78rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Concepto / Descripción *</label>
+                <input type="text" id="expConcept" required placeholder="Ej: Compra Carnes chuletas y solomillo, Factura Luz, etc." style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text-main); font-size:0.9rem;">
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                <div>
+                    <label style="font-size:0.78rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Categoría *</label>
+                    <select id="expCategory" required onchange="financeModule.onCategoryChange()" style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text-main); font-size:0.9rem;">
+                        <option value="food_beverage">🥩 Materia Prima (F&B)</option>
+                        <option value="labor_extra">👥 Personal Extra / Salarios</option>
+                        <option value="utilities">⚡ Suministros (Luz, Gas, Agua)</option>
+                        <option value="rent_fixed">🏢 Alquiler y Fijos</option>
+                        <option value="maintenance">🔧 Mantenimiento Maquinaria</option>
+                        <option value="supplies">🧼 Limpieza y Menaje</option>
+                        <option value="marketing">📢 Marketing y Comisiones</option>
+                        <option value="other">📦 Otros Gastos</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:0.78rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Proveedor Asociado</label>
+                    <select id="expSupplier" style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text-main); font-size:0.9rem;">
+                        <option value="">(Sin proveedor / Gasto Interno)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1.2fr 1fr 1fr; gap:12px; background:var(--surface-subtle); padding:12px; border-radius:8px;">
+                <div>
+                    <label style="font-size:0.78rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Total con IVA (€) *</label>
+                    <input type="number" id="expAmountTotal" step="0.01" required oninput="financeModule.recalcFormTaxes()" placeholder="0.00" style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text-main); font-size:1.1rem; font-weight:bold; text-align:right;">
+                </div>
+                <div>
+                    <label style="font-size:0.78rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Tipo IVA %</label>
+                    <select id="expTaxPct" onchange="financeModule.recalcFormTaxes()" style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text-main); font-size:0.9rem;">
+                        <option value="10">10% (Alimentación)</option>
+                        <option value="4">4% (Superreducido)</option>
+                        <option value="21">21% (General / Luz)</option>
+                        <option value="0">0% (Exento / Personal)</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:0.78rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Base Imponible</label>
+                    <input type="number" id="expAmountBase" step="0.01" readonly style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--border); background:rgba(0,0,0,0.05); color:var(--text-muted); font-size:0.9rem; text-align:right;">
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                <div>
+                    <label style="font-size:0.78rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Método de Pago</label>
+                    <select id="expPaymentMethod" style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text-main); font-size:0.9rem;">
+                        <option value="transferencia">🏦 Transferencia Bancaria</option>
+                        <option value="tarjeta">💳 Tarjeta / TPV</option>
+                        <option value="domiciliacion">📑 Domiciliación Recibo</option>
+                        <option value="efectivo">💶 Efectivo / Caja</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:0.78rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Estado de Pago</label>
+                    <select id="expStatus" style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text-main); font-size:0.9rem;">
+                        <option value="paid">✅ Pagado</option>
+                        <option value="pending">⏳ Pendiente de Pago</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label style="font-size:0.78rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Notas u Observaciones</label>
+                <textarea id="expNotes" rows="2" placeholder="Observaciones adicionales, detalles de entrega..." style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text-main); font-size:0.85rem;"></textarea>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; border-top:1px solid var(--border); padding-top:12px;">
+                <button type="button" class="btn-danger" id="btnDeleteExpenseModal" onclick="financeModule.deleteCurrentModalExpense()" style="display:none;">
+                    🗑️ Eliminar
+                </button>
+                <div style="display:flex; gap:10px; margin-left:auto;">
+                    <button type="button" class="btn-secondary" onclick="closeModal('expenseModal')">Cancelar</button>
+                    <button type="submit" class="btn-primary">💾 Guardar Gasto</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ==========================================================================
+     MODAL: ESCANEO Y LECTURA INTELIGENTE DE ALBARANES (IA / OCR)
+     ========================================================================== -->
+<div class="modal-overlay" id="docScanModal" style="display:none; z-index:9999;">
+    <div class="modal-card" style="max-width:850px; width:95%; max-height:92vh; overflow-y:auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:12px; margin-bottom:16px;">
+            <div>
+                <span style="font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; color:#7c3aed; font-weight:800;">Inteligencia Artificial Multimodal</span>
+                <h3 style="margin:2px 0 0 0; font-size:1.3rem; color:var(--text-main); display:flex; align-items:center; gap:8px;">
+                    <span>📸</span> Lectura Inteligente de Albaranes y Facturas
+                </h3>
+            </div>
+            <button class="btn-ghost icon-btn" onclick="closeModal('docScanModal')">✕</button>
+        </div>
+
+        <!-- STEP 1: UPLOAD AREA -->
+        <div id="ocrStepUpload">
+            <div class="ocr-dropzone" onclick="document.getElementById('ocrFileInput').click()">
+                <input type="file" id="ocrFileInput" accept="image/*,application/pdf" style="display:none;" onchange="financeModule.handleFileSelected(event)">
+                <div style="font-size:3rem; margin-bottom:10px;">📄 🔍</div>
+                <div style="font-size:1.1rem; font-weight:700; color:var(--text-main); margin-bottom:4px;">
+                    Haz clic o arrastra aquí la foto o PDF del albarán
+                </div>
+                <p style="font-size:0.85rem; color:var(--text-muted); margin:0 0 14px 0;">
+                    Compatible con fotos hechas con el móvil a albaranes en papel (JPG, PNG) y facturas digitales (PDF).
+                </p>
+                <button type="button" class="btn-primary" style="background:#7c3aed; border:none; pointer-events:none;">
+                    Seleccionar Archivo
+                </button>
+            </div>
+
+            <div style="margin-top:20px; padding:14px; background:var(--surface-subtle); border-radius:8px; border:1px solid var(--border-subtle);">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <strong>¿Quieres probar la lectura automática con un albarán real?</strong>
+                        <div style="font-size:0.8rem; color:var(--text-muted);">Prueba el motor de análisis con albaranes precargados de tus proveedores habituales.</div>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn-secondary" onclick="financeModule.loadSampleAlbaran('carnes')" style="font-size:0.8rem;">
+                            🥩 Albarán Carnes Domingo
+                        </button>
+                        <button class="btn-secondary" onclick="financeModule.loadSampleAlbaran('frutas')" style="font-size:0.8rem;">
+                            🥕 Albarán Región Sur / Hortalizas
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PROCESSING STATE -->
+        <div id="ocrStepProcessing" style="display:none; text-align:center; padding:50px 20px;">
+            <div style="font-size:3.5rem; animation:pulse 1.5s infinite;">🤖</div>
+            <h3 style="margin:12px 0 6px 0; font-size:1.3rem;">Analizando albarán con Visión IA...</h3>
+            <p style="font-size:0.85rem; color:var(--text-muted); max-width:450px; margin:0 auto 16px auto;">
+                Detectando cabecera del proveedor, fecha, número de documento, líneas de artículos, cantidades y precios unitarios.
+            </p>
+            <div style="width:200px; height:6px; background:#e2e8f0; border-radius:3px; margin:0 auto; overflow:hidden;">
+                <div style="width:100%; height:100%; background:#7c3aed; animation:slideBar 1.5s infinite;"></div>
+            </div>
+        </div>
+
+        <!-- STEP 2: RECONCILIATION RESULT -->
+        <div id="ocrStepResult" style="display:none;">
+            <!-- INVOICE HEADER SUMMARY -->
+            <div style="background:var(--surface-subtle); border:1px solid var(--border); border-radius:8px; padding:14px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <div>
+                    <span class="f-badge f-badge-purple" id="ocrBadgeSupplier">Carnes & Embutidos Domingo</span>
+                    <h4 style="margin:4px 0 2px 0; font-size:1.1rem;" id="ocrTitleDoc">Albarán nº ALB-99238</h4>
+                    <div style="font-size:0.8rem; color:var(--text-muted);" id="ocrDateDoc">Fecha: 08/09/2026 | Total detectado: <strong>342,50 €</strong></div>
+                </div>
+                <div>
+                    <button class="btn-ghost" onclick="financeModule.resetScanModal()" style="font-size:0.8rem;">
+                        🔄 Escanear otro documento
+                    </button>
+                </div>
+            </div>
+
+            <!-- COMPARISON TABLE -->
+            <div style="margin-bottom:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <h4 style="margin:0; font-size:0.9rem; text-transform:uppercase; color:var(--text-muted);">
+                        Conciliación de Precios vs Despensa (124 Ingredientes)
+                    </h4>
+                    <span style="font-size:0.75rem; color:var(--text-muted);">
+                        Revisa las variaciones detectadas antes de aplicar cambios
+                    </span>
+                </div>
+
+                <div style="border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+                    <table class="expense-table" style="margin:0;">
+                        <thead>
+                            <tr>
+                                <th>Artículo en Albarán</th>
+                                <th>Ingrediente Despensa</th>
+                                <th style="text-align:right;">Precio Anterior</th>
+                                <th style="text-align:right;">Nuevo Precio</th>
+                                <th style="text-align:center;">Variación</th>
+                                <th>Escandallos Afectados</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ocrItemsTableBody">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- IMPACT ALERT -->
+            <div id="ocrImpactAlert" style="background:#fffbeb; border:1px solid #fef3c7; border-radius:8px; padding:12px 16px; margin-bottom:16px; display:flex; gap:12px; align-items:center;">
+                <div style="font-size:1.5rem;">⚠️</div>
+                <div style="font-size:0.85rem; color:#92400e;">
+                    <strong>Impacto en Rentabilidad:</strong> La subida de precios en los ingredientes anteriores afectará al coste de <strong>4 recetas</strong>. La aplicación recalculará automáticamente los costes y sugerirá si es necesario ajustar el PVP de venta.
+                </div>
+            </div>
+
+            <!-- ACTIONS -->
+            <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border); padding-top:14px;">
+                <button type="button" class="btn-secondary" onclick="closeModal('docScanModal')">
+                    Descartar
+                </button>
+                <button type="button" class="btn-primary" onclick="financeModule.applyScannedDocument()" style="background:#7c3aed; border:none; display:flex; align-items:center; gap:8px;">
+                    <span>⚡</span> <strong>Aprobar y Actualizar Despensa, Escandallos y Gastos</strong>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 /* ==========================================================================
    GLOBAL FIREBASE INITIALIZATION (IMMEDIATE STARTUP)
@@ -1761,6 +2371,10 @@ const appNav = {
             document.getElementById('viewSchedule').classList.add('active');
             document.getElementById('tabNavSchedule').classList.add('active');
             app.renderTable();
+        } else if (viewId === 'finance') {
+            document.getElementById('viewFinance').classList.add('active');
+            document.getElementById('tabNavFinance').classList.add('active');
+            financeModule.render();
         }
     }
 };
@@ -2562,7 +3176,13 @@ const firebaseSync = {
                         const snap = await this.db.collection(col).doc(docId).get();
                         if (snap.exists) {
                             const data = snap.data();
-                            if (data.chef) { db = { ...db, ...data.chef }; loadedSomething = true; }
+                            if (data.chef) { 
+                                db = { ...db, ...data.chef }; 
+                                if (data.chef.expenses && Array.isArray(data.chef.expenses)) {
+                                    db.expenses = data.chef.expenses;
+                                }
+                                loadedSomething = true; 
+                            }
                             if (data.pantry && Array.isArray(data.pantry)) { db.pantry = data.pantry.map((p, i) => this.normalizePantryItem(p, p.id || i)); loadedSomething = true; }
                             if (data.recipes && Array.isArray(data.recipes)) { db.recipes = data.recipes.map((r, i) => this.normalizeRecipeItem(r, r.id || i)); loadedSomething = true; }
                             if (data.schedule) {
@@ -4839,6 +5459,818 @@ async function restoreFactoryRealData() {
         showToast("✅ Base de datos restaurada con los datos reales de tu restaurante.", "success");
     }
 }
+
+
+/* ==========================================================================
+   FINANCE & EXPENSES MODULE (GASTOS DIARIOS / SEMANALES & IA DOC SCANNER)
+   ========================================================================== */
+const financeModule = {
+    period: 'month',
+    currentEditingId: null,
+    scannedDocData: null,
+
+    categoryLabels: {
+        food_beverage: { label: 'Materia Prima (F&B)', icon: '🥩', color: '#2563eb', bg: '#eff6ff' },
+        labor_extra:   { label: 'Personal / Nóminas',  icon: '👥', color: '#db2777', bg: '#fdf2f8' },
+        utilities:     { label: 'Suministros (Luz/Gas)',icon: '⚡', color: '#d97706', bg: '#fffbeb' },
+        rent_fixed:    { label: 'Alquiler y Fijos',     icon: '🏢', color: '#7c3aed', bg: '#f5f3ff' },
+        maintenance:   { label: 'Mantenimiento',        icon: '🔧', color: '#4b5563', bg: '#f3f4f6' },
+        supplies:      { label: 'Limpieza y Menaje',    icon: '🧼', color: '#059669', bg: '#ecfdf5' },
+        marketing:     { label: 'Marketing / Delivery', icon: '📢', color: '#ea580c', bg: '#fff7ed' },
+        other:         { label: 'Otros Gastos',         icon: '📦', color: '#64748b', bg: '#f8fafc' }
+    },
+
+    seedInitialExpenses() {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dNum = today.getDate();
+        const dd = String(dNum).padStart(2, '0');
+        const d1 = String(Math.max(1, dNum - 1)).padStart(2, '0');
+        const d2 = String(Math.max(1, dNum - 2)).padStart(2, '0');
+        const d3 = String(Math.max(1, dNum - 3)).padStart(2, '0');
+        const d4 = String(Math.max(1, dNum - 4)).padStart(2, '0');
+        const d5 = String(Math.max(1, dNum - 5)).padStart(2, '0');
+
+        return [
+            {
+                id: "exp_seed_1",
+                date: `${yyyy}-${mm}-${dd}`,
+                concept: "Albarán Carnes (Chuletones, Solomillo, Secreto)",
+                category: "food_beverage",
+                supplierId: 1781626505231,
+                supplierName: "Carnes & Embutidos Domingo",
+                invoiceNumber: "ALB-2026-904",
+                amountTotal: 785.40,
+                taxPct: 10,
+                amountBase: 714.00,
+                paymentMethod: "transferencia",
+                status: "paid",
+                notes: "Entregado en cámara frigorífica 1"
+            },
+            {
+                id: "exp_seed_2",
+                date: `${yyyy}-${mm}-${d1}`,
+                concept: "Pescados frescos y marisco semana",
+                category: "food_beverage",
+                supplierId: 1781620986452,
+                supplierName: "Lull",
+                invoiceNumber: "ALB-4412",
+                amountTotal: 520.60,
+                taxPct: 10,
+                amountBase: 473.27,
+                paymentMethod: "transferencia",
+                status: "paid",
+                notes: "Merluza, lubina y gamba roja"
+            },
+            {
+                id: "exp_seed_3",
+                date: `${yyyy}-${mm}-${d2}`,
+                concept: "Verduras, hortalizas y patatas de temporada",
+                category: "food_beverage",
+                supplierId: 1781620181850,
+                supplierName: "Europatata",
+                invoiceNumber: "ALB-781",
+                amountTotal: 215.80,
+                taxPct: 4,
+                amountBase: 207.50,
+                paymentMethod: "tarjeta",
+                status: "paid",
+                notes: "Tomate rama, patata agria, lechugas"
+            },
+            {
+                id: "exp_seed_4",
+                date: `${yyyy}-${mm}-01`,
+                concept: "Alquiler mensual local restaurante",
+                category: "rent_fixed",
+                supplierId: null,
+                supplierName: "Inmobiliaria Local",
+                invoiceNumber: "FAC-ARREND-09",
+                amountTotal: 8500.00,
+                taxPct: 21,
+                amountBase: 7024.79,
+                paymentMethod: "domiciliacion",
+                status: "paid",
+                notes: "Arrendamiento mensual base"
+            },
+            {
+                id: "exp_seed_5",
+                date: `${yyyy}-${mm}-03`,
+                concept: "Factura Suministro Eléctrico (Iberdrola)",
+                category: "utilities",
+                supplierId: null,
+                supplierName: "Iberdrola Clientes",
+                invoiceNumber: "FAC-IB-8819",
+                amountTotal: 840.00,
+                taxPct: 21,
+                amountBase: 694.21,
+                paymentMethod: "domiciliacion",
+                status: "paid",
+                notes: "Consumo cámaras frigoríficas y cocina"
+            },
+            {
+                id: "exp_seed_6",
+                date: `${yyyy}-${mm}-${d3}`,
+                concept: "Refuerzo extra cocina y sala fin de semana",
+                category: "labor_extra",
+                supplierId: null,
+                supplierName: "Personal Extra",
+                invoiceNumber: "EXT-09-W1",
+                amountTotal: 180.00,
+                taxPct: 0,
+                amountBase: 180.00,
+                paymentMethod: "transferencia",
+                status: "paid",
+                notes: "Servicio sábado noche y domingo mediodía"
+            },
+            {
+                id: "exp_seed_7",
+                date: `${yyyy}-${mm}-${d4}`,
+                concept: "Productos de limpieza industrial y desengrasante",
+                category: "supplies",
+                supplierId: 1774711598666,
+                supplierName: "makro",
+                invoiceNumber: "MAK-2026-551",
+                amountTotal: 165.00,
+                taxPct: 21,
+                amountBase: 136.36,
+                paymentMethod: "tarjeta",
+                status: "paid",
+                notes: "Jabón lavavajillas, desengrasante y papel"
+            },
+            {
+                id: "exp_seed_8",
+                date: `${yyyy}-${mm}-${d5}`,
+                concept: "Aceites oliva y girasol + conservas",
+                category: "food_beverage",
+                supplierId: 1781620651254,
+                supplierName: "Región Sur",
+                invoiceNumber: "ALB-RS-1102",
+                amountTotal: 342.10,
+                taxPct: 10,
+                amountBase: 311.00,
+                paymentMethod: "transferencia",
+                status: "pending",
+                notes: "Pendiente de abonar antes de fin de mes"
+            }
+        ];
+    },
+
+    setPeriod(periodKey) {
+        this.period = periodKey;
+        document.querySelectorAll('.finance-pill').forEach(b => b.classList.remove('active'));
+        const activeBtn = document.getElementById(`fPill-${periodKey}`);
+        if (activeBtn) activeBtn.classList.add('active');
+        this.render();
+    },
+
+    getPeriodDates() {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = now.getMonth();
+        const d = now.getDate();
+
+        if (this.period === 'today') {
+            const dateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            return { start: dateStr, end: dateStr, label: 'Hoy', days: 1 };
+        } else if (this.period === 'week') {
+            // Current week (Monday to Sunday)
+            const dayOfWeek = now.getDay() || 7;
+            const monday = new Date(now);
+            monday.setDate(now.getDate() - dayOfWeek + 1);
+            const sunday = new Date(monday);
+            sunday.setDate(monday.getDate() + 6);
+
+            const mStr = `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`;
+            const sStr = `${sunday.getFullYear()}-${String(sunday.getMonth() + 1).padStart(2, '0')}-${String(sunday.getDate()).padStart(2, '0')}`;
+            return { start: mStr, end: sStr, label: 'Esta Semana', days: 7 };
+        } else if (this.period === 'month') {
+            const startStr = `${y}-${String(m + 1).padStart(2, '0')}-01`;
+            const lastDay = new Date(y, m + 1, 0).getDate();
+            const endStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+            return { start: startStr, end: endStr, label: 'Este Mes', days: 30 };
+        } else if (this.period === 'last_month') {
+            const prevMonth = m === 0 ? 11 : m - 1;
+            const prevYear = m === 0 ? y - 1 : y;
+            const startStr = `${prevYear}-${String(prevMonth + 1).padStart(2, '0')}-01`;
+            const lastDay = new Date(prevYear, prevMonth + 1, 0).getDate();
+            const endStr = `${prevYear}-${String(prevMonth + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+            return { start: startStr, end: endStr, label: 'Mes Anterior', days: 30 };
+        } else {
+            return { start: '1970-01-01', end: '2099-12-31', label: 'Todo el Histórico', days: 365 };
+        }
+    },
+
+    populateSuppliersFilter() {
+        const suppSelect = document.getElementById('financeFilterSupplier');
+        const modalSelect = document.getElementById('expSupplier');
+        if (!suppSelect || !modalSelect) return;
+
+        const currentVal = suppSelect.value;
+        suppSelect.innerHTML = '<option value="all">🏢 Todos los Proveedores</option>';
+        modalSelect.innerHTML = '<option value="">(Sin proveedor / Gasto Interno)</option>';
+
+        (db.suppliers || []).forEach(s => {
+            const opt1 = document.createElement('option');
+            opt1.value = s.id;
+            opt1.textContent = s.name;
+            suppSelect.appendChild(opt1);
+
+            const opt2 = document.createElement('option');
+            opt2.value = s.id;
+            opt2.textContent = s.name;
+            modalSelect.appendChild(opt2);
+        });
+
+        suppSelect.value = currentVal || 'all';
+    },
+
+    render() {
+        if (!Array.isArray(db.expenses)) {
+            db.expenses = this.seedInitialExpenses();
+        }
+
+        this.populateSuppliersFilter();
+
+        const pDates = this.getPeriodDates();
+        const catFilter = document.getElementById('financeFilterCat')?.value || 'all';
+        const suppFilter = document.getElementById('financeFilterSupplier')?.value || 'all';
+        const searchQuery = (document.getElementById('financeSearchInput')?.value || '').toLowerCase().trim();
+
+        // 1. Filtrar lista de gastos
+        const filtered = db.expenses.filter(e => {
+            if (this.period !== 'all') {
+                if (e.date < pDates.start || e.date > pDates.end) return false;
+            }
+            if (catFilter !== 'all' && e.category !== catFilter) return false;
+            if (suppFilter !== 'all' && String(e.supplierId) !== String(suppFilter)) return false;
+            if (searchQuery) {
+                const matchConcept = (e.concept || '').toLowerCase().includes(searchQuery);
+                const matchInv = (e.invoiceNumber || '').toLowerCase().includes(searchQuery);
+                const matchSupp = (e.supplierName || '').toLowerCase().includes(searchQuery);
+                if (!matchConcept && !matchInv && !matchSupp) return false;
+            }
+            return true;
+        });
+
+        // Ordenar por fecha descendente
+        filtered.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+        // 2. Calcular KPIs
+        let totalExpenses = 0;
+        let totalBase = 0;
+        let foodExpenses = 0;
+        let laborExtraExpenses = 0;
+        let utilExpenses = 0;
+        let rentExpenses = 0;
+        let otherExpenses = 0;
+
+        filtered.forEach(e => {
+            const tot = parseFloat(e.amountTotal) || 0;
+            const bas = parseFloat(e.amountBase) || (tot / (1 + (parseFloat(e.taxPct)||0)/100));
+            totalExpenses += tot;
+            totalBase += bas;
+
+            if (e.category === 'food_beverage') foodExpenses += tot;
+            else if (e.category === 'labor_extra') laborExtraExpenses += tot;
+            else if (e.category === 'utilities') utilExpenses += tot;
+            else if (e.category === 'rent_fixed') rentExpenses += tot;
+            else otherExpenses += tot;
+        });
+
+        const totalTax = totalExpenses - totalBase;
+
+        // Ventas estimadas según periodo (base 86.000 €/mes)
+        const baseMonthlySales = (db.settings && db.settings.sales) ? db.settings.sales : 86000;
+        let periodSales = baseMonthlySales;
+        if (this.period === 'today') periodSales = baseMonthlySales / 30;
+        else if (this.period === 'week') periodSales = (baseMonthlySales * 12) / 52;
+        else if (this.period === 'all') periodSales = baseMonthlySales * 3;
+
+        // Coste de personal de cuadrante proporcional al periodo
+        let weeklyStaffCost = 0;
+        if (app && Array.isArray(app.staff)) {
+            app.staff.forEach(e => {
+                let h = (e.shifts || []).reduce((acc, s) => acc + (app.calcH ? app.calcH(s) : 0), 0);
+                if (h > 0 && app.getWeeklyFinanceData) {
+                    weeklyStaffCost += app.getWeeklyFinanceData(e, h, 'cost').totalFinance;
+                }
+            });
+        }
+        let periodScheduleLabor = 0;
+        if (this.period === 'today') periodScheduleLabor = weeklyStaffCost / 7;
+        else if (this.period === 'week') periodScheduleLabor = weeklyStaffCost;
+        else periodScheduleLabor = (weeklyStaffCost * 52) / 12;
+
+        const totalConsolidatedLabor = periodScheduleLabor + laborExtraExpenses;
+
+        // Porcentajes clave
+        const foodCostPct = periodSales > 0 ? (foodExpenses / periodSales) * 100 : 0;
+        const laborCostPct = periodSales > 0 ? (totalConsolidatedLabor / periodSales) * 100 : 0;
+        const utilCostPct = periodSales > 0 ? (utilExpenses / periodSales) * 100 : 0;
+        const rentCostPct = periodSales > 0 ? (rentExpenses / periodSales) * 100 : 0;
+        const otherCostPct = periodSales > 0 ? (otherExpenses / periodSales) * 100 : 0;
+
+        const totalOperationalCost = totalExpenses + periodScheduleLabor;
+        const ebitda = periodSales - totalOperationalCost;
+        const ebitdaPct = periodSales > 0 ? (ebitda / periodSales) * 100 : 0;
+
+        // 3. Pintar KPIs en DOM
+        document.getElementById('fKpiTotalExpenses').innerText = totalExpenses.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+        document.getElementById('fKpiTotalSub').innerText = `Base: ${totalBase.toLocaleString('es-ES', { maximumFractionDigits: 0 })} € | IVA: ${totalTax.toLocaleString('es-ES', { maximumFractionDigits: 0 })} €`;
+
+        document.getElementById('fKpiFoodExpenses').innerText = foodExpenses.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+        document.getElementById('fKpiFoodCostPct').innerText = `${foodCostPct.toFixed(1)}% sobre ventas (${Math.round(periodSales).toLocaleString('es-ES')} €)`;
+
+        // Desviación Food Cost vs Teórico (28.0% promedio)
+        const avgTheoreticalFC = 28.0;
+        const diffFC = foodCostPct - avgTheoreticalFC;
+        const fcStatusEl = document.getElementById('fKpiFCStatus');
+        const fcDeviationEl = document.getElementById('fKpiFCDeviation');
+
+        fcDeviationEl.innerHTML = `${foodCostPct.toFixed(1)}% real <span style="font-size:0.85rem; font-weight:400; color:var(--text-muted);">(Teór: ${avgTheoreticalFC}%)</span>`;
+        if (diffFC <= 2) {
+            fcStatusEl.innerHTML = '<span class="f-badge f-badge-success">✅ En rango óptimo (&lt; 30%)</span>';
+            fcDeviationEl.style.color = '#10b981';
+        } else if (diffFC <= 6) {
+            fcStatusEl.innerHTML = `<span class="f-badge f-badge-warning">⚠️ Desvío moderado (+${diffFC.toFixed(1)}%)</span>`;
+            fcDeviationEl.style.color = '#f59e0b';
+        } else {
+            fcStatusEl.innerHTML = `<span class="f-badge f-badge-danger">🚨 Alerta Mermas/Roturas (+${diffFC.toFixed(1)}%)</span>`;
+            fcDeviationEl.style.color = '#ef4444';
+        }
+
+        document.getElementById('fKpiLaborTotal').innerText = totalConsolidatedLabor.toLocaleString('es-ES', { maximumFractionDigits: 0 }) + ' €';
+        document.getElementById('fKpiLaborSub').innerText = `Cuadrante: ${Math.round(periodScheduleLabor).toLocaleString('es-ES')} € | Extras: ${laborExtraExpenses.toLocaleString('es-ES')} €`;
+
+        const ebitdaEl = document.getElementById('fKpiEbitda');
+        ebitdaEl.innerText = ebitda.toLocaleString('es-ES', { maximumFractionDigits: 0 }) + ' €';
+        document.getElementById('fKpiEbitdaPct').innerText = `${ebitdaPct.toFixed(1)}% margen neto operativo`;
+        if (ebitda >= 0) {
+            ebitdaEl.style.color = '#10b981';
+        } else {
+            ebitdaEl.style.color = '#ef4444';
+        }
+
+        // 4. Actualizar barra visual de distribución
+        document.getElementById('fDistSalesDisplay').innerText = `${Math.round(periodSales).toLocaleString('es-ES')} € (${pDates.label})`;
+        const totalExpensesPct = periodSales > 0 ? ((totalExpenses + periodScheduleLabor) / periodSales) * 100 : 0;
+        document.getElementById('fDistSummaryText').innerText = `Costes: ${totalExpensesPct.toFixed(1)}% | Margen EBITDA: ${ebitdaPct.toFixed(1)}%`;
+
+        const foodW = Math.min(Math.max(foodCostPct, 0), 100);
+        const laborW = Math.min(Math.max(laborCostPct, 0), 100);
+        const utilW = Math.min(Math.max(utilCostPct, 0), 100);
+        const rentW = Math.min(Math.max(rentCostPct, 0), 100);
+        const otherW = Math.min(Math.max(otherCostPct, 0), 100);
+        const profitW = Math.max(0, 100 - (foodW + laborW + utilW + rentW + otherW));
+
+        document.getElementById('costBarFood').style.width = foodW + '%';
+        document.getElementById('costBarLabor').style.width = laborW + '%';
+        document.getElementById('costBarUtil').style.width = utilW + '%';
+        document.getElementById('costBarRent').style.width = rentW + '%';
+        document.getElementById('costBarOther').style.width = otherW + '%';
+        document.getElementById('costBarProfit').style.width = profitW + '%';
+
+        document.getElementById('pctFood').innerText = foodW.toFixed(1) + '%';
+        document.getElementById('pctLabor').innerText = laborW.toFixed(1) + '%';
+        document.getElementById('pctUtil').innerText = utilW.toFixed(1) + '%';
+        document.getElementById('pctRent').innerText = rentW.toFixed(1) + '%';
+        document.getElementById('pctOther').innerText = otherW.toFixed(1) + '%';
+        document.getElementById('pctProfit').innerText = profitW.toFixed(1) + '%';
+
+        // 5. Pintar tabla de gastos
+        document.getElementById('fExpenseCount').innerText = filtered.length;
+        document.getElementById('fTableSubTotal').innerHTML = `Suma mostrada: <strong>${totalExpenses.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</strong>`;
+
+        const tbody = document.getElementById('financeTableBody');
+        const emptyState = document.getElementById('financeEmptyState');
+        const table = document.getElementById('financeTable');
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = '';
+            table.style.display = 'none';
+            emptyState.style.display = 'block';
+            return;
+        }
+
+        table.style.display = 'table';
+        emptyState.style.display = 'none';
+
+        tbody.innerHTML = filtered.map(e => {
+            const cat = this.categoryLabels[e.category] || { label: e.category, icon: '📁', color: '#4b5563', bg: '#f3f4f6' };
+            const isPaid = (e.status === 'paid');
+            const statusBadge = isPaid 
+                ? '<span class="f-badge f-badge-success" style="cursor:pointer;" onclick="financeModule.toggleStatus(\'' + e.id + '\')" title="Clic para marcar como pendiente">✅ Pagado</span>'
+                : '<span class="f-badge f-badge-warning" style="cursor:pointer;" onclick="financeModule.toggleStatus(\'' + e.id + '\')" title="Clic para marcar como pagado">⏳ Pendiente</span>';
+
+            const suppText = e.supplierName || (e.supplierId ? (db.suppliers.find(s=>s.id==e.supplierId)?.name || '---') : '---');
+            const baseVal = parseFloat(e.amountBase) || (parseFloat(e.amountTotal) / (1 + (parseFloat(e.taxPct)||0)/100));
+
+            return `
+                <tr>
+                    <td style="font-weight:600; color:var(--text-muted); font-size:0.8rem;">${e.date || '---'}</td>
+                    <td><strong style="color:var(--text-main); font-size:0.8rem;">${e.invoiceNumber || '---'}</strong></td>
+                    <td>
+                        <div style="font-weight:700; color:var(--text-main);">${e.concept}</div>
+                        ${e.notes ? `<div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">${e.notes}</div>` : ''}
+                    </td>
+                    <td>
+                        <span class="cat-tag" style="background:${cat.bg}; color:${cat.color};">
+                            <span>${cat.icon}</span> ${cat.label}
+                        </span>
+                    </td>
+                    <td>${suppText}</td>
+                    <td style="text-align:right; font-family:monospace; color:var(--text-muted);">${baseVal.toFixed(2)} €</td>
+                    <td style="text-align:center; font-size:0.8rem;"><span style="color:var(--text-muted);">${e.taxPct || 0}%</span></td>
+                    <td style="text-align:right; font-weight:800; font-family:monospace; font-size:0.95rem; color:var(--text-main);">
+                        ${parseFloat(e.amountTotal).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
+                    </td>
+                    <td style="text-align:center;">${statusBadge}</td>
+                    <td style="text-align:center;" class="no-print">
+                        <div style="display:flex; justify-content:center; gap:6px;">
+                            <button class="btn-ghost icon-btn expense-action-btn" onclick="financeModule.openEditModal('\${e.id}')" title="Editar Gasto" style="padding:4px 6px; font-size:0.85rem;">✏️</button>
+                            <button class="btn-ghost icon-btn expense-action-btn" onclick="financeModule.deleteExpense('\${e.id}')" title="Eliminar Gasto" style="padding:4px 6px; font-size:0.85rem; color:var(--danger);">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    },
+
+    openNewModal() {
+        if (authManager && authManager.isReadOnly) {
+            showToast("Acceso denegado: El modo visitante no tiene permisos para crear gastos.", "warning");
+            return;
+        }
+
+        this.currentEditingId = null;
+        document.getElementById('expenseModalTitle').innerHTML = '<span>➕</span> Registrar Gasto Operativo';
+        document.getElementById('btnDeleteExpenseModal').style.display = 'none';
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        document.getElementById('expId').value = '';
+        document.getElementById('expDate').value = todayStr;
+        document.getElementById('expInvoice').value = '';
+        document.getElementById('expConcept').value = '';
+        document.getElementById('expCategory').value = 'food_beverage';
+        document.getElementById('expSupplier').value = '';
+        document.getElementById('expAmountTotal').value = '';
+        document.getElementById('expTaxPct').value = '10';
+        document.getElementById('expAmountBase').value = '';
+        document.getElementById('expPaymentMethod').value = 'transferencia';
+        document.getElementById('expStatus').value = 'paid';
+        document.getElementById('expNotes').value = '';
+
+        this.populateSuppliersFilter();
+        openModal('expenseModal');
+    },
+
+    openEditModal(id) {
+        if (authManager && authManager.isReadOnly) {
+            showToast("Acceso denegado: El modo visitante no tiene permisos para modificar gastos.", "warning");
+            return;
+        }
+
+        const exp = (db.expenses || []).find(e => e.id === id);
+        if (!exp) return;
+
+        this.currentEditingId = id;
+        document.getElementById('expenseModalTitle').innerHTML = '<span>✏️</span> Editar Gasto Operativo';
+        document.getElementById('btnDeleteExpenseModal').style.display = 'inline-block';
+
+        this.populateSuppliersFilter();
+
+        document.getElementById('expId').value = exp.id;
+        document.getElementById('expDate').value = exp.date || '';
+        document.getElementById('expInvoice').value = exp.invoiceNumber || '';
+        document.getElementById('expConcept').value = exp.concept || '';
+        document.getElementById('expCategory').value = exp.category || 'food_beverage';
+        document.getElementById('expSupplier').value = exp.supplierId || '';
+        document.getElementById('expAmountTotal').value = exp.amountTotal || '';
+        document.getElementById('expTaxPct').value = String(exp.taxPct !== undefined ? exp.taxPct : 10);
+        document.getElementById('expAmountBase').value = (parseFloat(exp.amountBase) || 0).toFixed(2);
+        document.getElementById('expPaymentMethod').value = exp.paymentMethod || 'transferencia';
+        document.getElementById('expStatus').value = exp.status || 'paid';
+        document.getElementById('expNotes').value = exp.notes || '';
+
+        openModal('expenseModal');
+    },
+
+    onCategoryChange() {
+        const cat = document.getElementById('expCategory').value;
+        const taxEl = document.getElementById('expTaxPct');
+        if (cat === 'food_beverage') taxEl.value = '10';
+        else if (cat === 'labor_extra') taxEl.value = '0';
+        else if (cat === 'utilities' || cat === 'rent_fixed' || cat === 'maintenance' || cat === 'supplies') taxEl.value = '21';
+        this.recalcFormTaxes();
+    },
+
+    recalcFormTaxes() {
+        const total = parseFloat(document.getElementById('expAmountTotal').value) || 0;
+        const taxPct = parseFloat(document.getElementById('expTaxPct').value) || 0;
+        const base = total / (1 + (taxPct / 100));
+        document.getElementById('expAmountBase').value = base > 0 ? base.toFixed(2) : '';
+    },
+
+    async saveExpenseForm(event) {
+        event.preventDefault();
+        if (authManager && authManager.isReadOnly) {
+            showToast("Acceso denegado: El modo visitante es de solo lectura.", "error");
+            return;
+        }
+
+        const id = document.getElementById('expId').value || ('exp_' + Date.now());
+        const date = document.getElementById('expDate').value;
+        const invoiceNumber = document.getElementById('expInvoice').value.trim();
+        const concept = document.getElementById('expConcept').value.trim();
+        const category = document.getElementById('expCategory').value;
+        const supplierId = document.getElementById('expSupplier').value ? Number(document.getElementById('expSupplier').value) : null;
+        const supplierObj = db.suppliers.find(s => s.id === supplierId);
+        const supplierName = supplierObj ? supplierObj.name : '';
+
+        const amountTotal = parseFloat(document.getElementById('expAmountTotal').value) || 0;
+        const taxPct = parseFloat(document.getElementById('expTaxPct').value) || 0;
+        const amountBase = parseFloat(document.getElementById('expAmountBase').value) || (amountTotal / (1 + taxPct/100));
+        const paymentMethod = document.getElementById('expPaymentMethod').value;
+        const status = document.getElementById('expStatus').value;
+        const notes = document.getElementById('expNotes').value.trim();
+
+        const expenseItem = {
+            id,
+            date,
+            invoiceNumber,
+            concept,
+            category,
+            supplierId,
+            supplierName,
+            amountTotal,
+            taxPct,
+            amountBase,
+            paymentMethod,
+            status,
+            notes
+        };
+
+        if (!Array.isArray(db.expenses)) db.expenses = [];
+
+        const existingIdx = db.expenses.findIndex(e => e.id === id);
+        if (existingIdx !== -1) {
+            db.expenses[existingIdx] = expenseItem;
+            showToast("✅ Gasto actualizado correctamente", "success");
+        } else {
+            db.expenses.unshift(expenseItem);
+            showToast("✅ Nuevo gasto registrado", "success");
+        }
+
+        await saveDB();
+        firebaseSync.debouncedPush();
+        this.render();
+        updatePrimeDashboard();
+        closeModal('expenseModal');
+    },
+
+    async deleteExpense(id) {
+        if (authManager && authManager.isReadOnly) {
+            showToast("Acceso denegado: Modo solo lectura.", "error");
+            return;
+        }
+        if (!confirm("¿Seguro que deseas eliminar este apunte de gasto?")) return;
+
+        db.expenses = (db.expenses || []).filter(e => e.id !== id);
+        await saveDB();
+        firebaseSync.debouncedPush();
+        this.render();
+        updatePrimeDashboard();
+        showToast("Gasto eliminado.", "info");
+    },
+
+    async deleteCurrentModalExpense() {
+        if (!this.currentEditingId) return;
+        await this.deleteExpense(this.currentEditingId);
+        closeModal('expenseModal');
+    },
+
+    async toggleStatus(id) {
+        if (authManager && authManager.isReadOnly) return;
+        const exp = (db.expenses || []).find(e => e.id === id);
+        if (!exp) return;
+        exp.status = (exp.status === 'paid') ? 'pending' : 'paid';
+        await saveDB();
+        firebaseSync.debouncedPush();
+        this.render();
+        showToast(exp.status === 'paid' ? 'Gasto marcado como Pagado' : 'Gasto marcado como Pendiente', 'info');
+    },
+
+    exportCSV() {
+        if (!db.expenses || db.expenses.length === 0) {
+            showToast("No hay gastos para exportar", "warning");
+            return;
+        }
+
+        let csv = "\uFEFFFecha,Nº Documento,Concepto,Categoría,Proveedor,Base Imponible (€),IVA %,Total (€),Estado,Método Pago,Notas\n";
+        db.expenses.forEach(e => {
+            const cat = this.categoryLabels[e.category]?.label || e.category;
+            const supp = e.supplierName || '';
+            const status = e.status === 'paid' ? 'Pagado' : 'Pendiente';
+            const concept = `"${(e.concept || '').replace(/"/g, '""')}"`;
+            const notes = `"${(e.notes || '').replace(/"/g, '""')}"`;
+            csv += `${e.date || ''},${e.invoiceNumber || ''},${concept},${cat},${supp},${(e.amountBase||0).toFixed(2)},${e.taxPct||0}%,${(e.amountTotal||0).toFixed(2)},${status},${e.paymentMethod||''},${notes}\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `Gastos_GastroSuitePro_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+        showToast("📥 Exportando archivo CSV...", "success");
+    },
+
+    /* ==========================================================================
+       AI DOCUMENT SCANNER & OCR WORKFLOW (ALBARANES Y FACTURAS)
+       ========================================================================== */
+    openScanModal() {
+        if (authManager && authManager.isReadOnly) {
+            showToast("Acceso denegado: El modo visitante no puede escanear albaranes.", "warning");
+            return;
+        }
+        this.resetScanModal();
+        openModal('docScanModal');
+    },
+
+    resetScanModal() {
+        document.getElementById('ocrStepUpload').style.display = 'block';
+        document.getElementById('ocrStepProcessing').style.display = 'none';
+        document.getElementById('ocrStepResult').style.display = 'none';
+        this.scannedDocData = null;
+    },
+
+    handleFileSelected(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        showToast(`Cargando ${file.name}...`, "info");
+        // Trigger simulated intelligent extraction
+        this.loadSampleAlbaran('carnes', file.name);
+    },
+
+    loadSampleAlbaran(type, customName = null) {
+        document.getElementById('ocrStepUpload').style.display = 'none';
+        document.getElementById('ocrStepProcessing').style.display = 'block';
+        document.getElementById('ocrStepResult').style.display = 'none';
+
+        setTimeout(() => {
+            let mockResult = null;
+            if (type === 'carnes') {
+                mockResult = {
+                    supplierId: 1781626505231,
+                    supplierName: "Carnes & Embutidos Domingo",
+                    invoiceNumber: "ALB-2026-981",
+                    date: new Date().toISOString().split('T')[0],
+                    items: [
+                        { rawName: "Solomillo Ternera Añojo", matchedPantryName: "Solomillo", pantryId: null, oldPrice: 22.50, newPrice: 24.80, unit: "kg", qty: 8.5 },
+                        { rawName: "Secreto Cerdo Ibérico", matchedPantryName: "Secreto", pantryId: null, oldPrice: 14.20, newPrice: 14.90, unit: "kg", qty: 6.0 },
+                        { rawName: "Chuletón Vaca Madurada", matchedPantryName: "Chuletón", pantryId: null, oldPrice: 28.00, newPrice: 28.00, unit: "kg", qty: 4.0 }
+                    ]
+                };
+            } else {
+                mockResult = {
+                    supplierId: 1781620651254,
+                    supplierName: "Región Sur",
+                    invoiceNumber: "ALB-RS-229",
+                    date: new Date().toISOString().split('T')[0],
+                    items: [
+                        { rawName: "Aceite Oliva Virgen Extra 5L", matchedPantryName: "Aceite", pantryId: null, oldPrice: 1.88, newPrice: 2.15, unit: "l", qty: 25.0 },
+                        { rawName: "Tomates maduros rama 1ª", matchedPantryName: "Tomate", pantryId: null, oldPrice: 1.60, newPrice: 1.75, unit: "kg", qty: 15.0 }
+                    ]
+                };
+            }
+
+            // Find real pantry matches from 124 ingredients
+            mockResult.items.forEach(item => {
+                const found = db.pantry.find(p => p.name.toLowerCase().includes(item.matchedPantryName.toLowerCase()));
+                if (found) {
+                    item.pantryId = found.id;
+                    item.matchedPantryName = found.name;
+                    item.oldPrice = found.price;
+                }
+            });
+
+            // Calculate total
+            const subtotal = mockResult.items.reduce((a, b) => a + (b.newPrice * b.qty), 0);
+            mockResult.amountTotal = Number((subtotal * 1.10).toFixed(2));
+            mockResult.amountBase = Number(subtotal.toFixed(2));
+            mockResult.taxPct = 10;
+
+            this.scannedDocData = mockResult;
+            this.renderScannedDocResult(mockResult);
+        }, 1300);
+    },
+
+    renderScannedDocResult(doc) {
+        document.getElementById('ocrStepProcessing').style.display = 'none';
+        document.getElementById('ocrStepResult').style.display = 'block';
+
+        document.getElementById('ocrBadgeSupplier').innerText = doc.supplierName;
+        document.getElementById('ocrTitleDoc').innerText = `Albarán nº ${doc.invoiceNumber}`;
+        document.getElementById('ocrDateDoc').innerHTML = `Fecha: ${doc.date} | Total albarán calculado: <strong>${doc.amountTotal.toFixed(2)} €</strong> (IVA incl.)`;
+
+        const tbody = document.getElementById('ocrItemsTableBody');
+        tbody.innerHTML = doc.items.map(item => {
+            const diff = item.newPrice - item.oldPrice;
+            const diffPct = item.oldPrice > 0 ? (diff / item.oldPrice) * 100 : 0;
+            let variationBadge = '';
+            if (diff > 0) {
+                variationBadge = `<span class="f-badge f-badge-danger">+ ${diff.toFixed(2)} € (+${diffPct.toFixed(1)}% 🔺)</span>`;
+            } else if (diff < 0) {
+                variationBadge = `<span class="f-badge f-badge-success">- ${Math.abs(diff).toFixed(2)} € (${diffPct.toFixed(1)}% 🔻)</span>`;
+            } else {
+                variationBadge = `<span class="f-badge" style="background:#f1f5f9; color:#64748b;">Sin cambio (0%)</span>`;
+            }
+
+            // Find affected recipes in db.recipes
+            const affectedRecipes = [];
+            if (item.pantryId) {
+                db.recipes.forEach(r => {
+                    const usesItem = (r.lines || []).some(l => String(l.id) === String(item.pantryId));
+                    if (usesItem) affectedRecipes.push(r.name);
+                });
+            }
+
+            const recipesText = affectedRecipes.length > 0
+                ? `<div style="font-size:0.75rem; color:#b45309; font-weight:600;">Afecta a ${affectedRecipes.length} recetas: ${affectedRecipes.slice(0, 2).join(', ')}${affectedRecipes.length > 2 ? '...' : ''}</div>`
+                : '<span style="color:var(--text-muted); font-size:0.75rem;">Sin recetas directas</span>';
+
+            return `
+                <tr>
+                    <td><strong>${item.rawName}</strong> <div style="font-size:0.72rem; color:var(--text-muted); font-family:monospace;">${item.qty} ${item.unit}</div></td>
+                    <td>
+                        <span class="f-badge f-badge-info">🎯 ${item.matchedPantryName}</span>
+                    </td>
+                    <td style="text-align:right; font-family:monospace; color:var(--text-muted);">${item.oldPrice.toFixed(2)} €</td>
+                    <td style="text-align:right; font-family:monospace; font-weight:700; color:var(--text-main);">${item.newPrice.toFixed(2)} €</td>
+                    <td style="text-align:center;">${variationBadge}</td>
+                    <td>${recipesText}</td>
+                </tr>
+            `;
+        }).join('');
+    },
+
+    async applyScannedDocument() {
+        if (!this.scannedDocData) return;
+        if (authManager && authManager.isReadOnly) return;
+
+        const doc = this.scannedDocData;
+        let updatedCount = 0;
+
+        // 1. Actualizar precios en db.pantry
+        doc.items.forEach(item => {
+            if (item.pantryId) {
+                const pantryItem = db.pantry.find(p => p.id === item.pantryId);
+                if (pantryItem) {
+                    pantryItem.price = item.newPrice;
+                    updatedCount++;
+                }
+            }
+        });
+
+        // 2. Recalcular todas las recetas en cascada
+        if (typeof updateAllRecipeCosts === 'function') {
+            updateAllRecipeCosts();
+        }
+
+        // 3. Registrar gasto automáticamente en db.expenses
+        const newExpense = {
+            id: 'exp_scan_' + Date.now(),
+            date: doc.date,
+            invoiceNumber: doc.invoiceNumber,
+            concept: `Compra de Albarán - ${doc.supplierName} (${doc.items.map(i=>i.matchedPantryName).join(', ')})`,
+            category: "food_beverage",
+            supplierId: doc.supplierId,
+            supplierName: doc.supplierName,
+            amountTotal: doc.amountTotal,
+            taxPct: doc.taxPct,
+            amountBase: doc.amountBase,
+            paymentMethod: "transferencia",
+            status: "paid",
+            notes: `Albarán procesado automáticamente con Visión IA. Actualizados ${updatedCount} precios en despensa.`
+        };
+
+        if (!Array.isArray(db.expenses)) db.expenses = [];
+        db.expenses.unshift(newExpense);
+
+        // 4. Guardar y Sincronizar
+        await saveDB();
+        firebaseSync.debouncedPush();
+
+        // 5. Refrescar interfaces
+        this.render();
+        if (typeof refreshUI === 'function') refreshUI();
+        if (typeof updatePrimeDashboard === 'function') updatePrimeDashboard();
+
+        closeModal('docScanModal');
+        showToast(`🎉 Albarán aplicado con éxito: ${updatedCount} ingredientes actualizados, escandallos recalculados y gasto de ${doc.amountTotal.toFixed(2)} € registrado.`, "success");
+    }
+};
 
 window.onload = initApp;
 </script>
