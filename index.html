@@ -1719,6 +1719,27 @@
      ========================================================================== -->
 <script>
 /* ==========================================================================
+   GLOBAL FIREBASE INITIALIZATION (IMMEDIATE STARTUP)
+   ========================================================================== */
+const GASTRO_FIREBASE_CONFIG = {
+    apiKey: "AIzaSyAEdddRGq5sGETLxJR7EHdh1svkLZI7Sv8",
+    authDomain: "calculadora-de-platos.firebaseapp.com",
+    projectId: "calculadora-de-platos",
+    storageBucket: "calculadora-de-platos.firebasestorage.app",
+    messagingSenderId: "999617852679",
+    appId: "1:999617852679:web:f801769138e505a6e7c1a2"
+};
+
+try {
+    if (typeof firebase !== 'undefined' && (!firebase.apps || !firebase.apps.length)) {
+        firebase.initializeApp(GASTRO_FIREBASE_CONFIG);
+        console.log("Firebase App [DEFAULT] initialized immediately on script startup.");
+    }
+} catch (e) {
+    console.warn("Immediate Firebase initialization warning:", e);
+}
+
+/* ==========================================================================
    A. NAVIGATION CONTROLLER
    ========================================================================== */
 const appNav = {
@@ -1758,12 +1779,23 @@ const authManager = {
         guestPin: "2026"
     },
 
+    ensureFirebase() {
+        if (typeof firebase === 'undefined') {
+            throw new Error("El SDK de Firebase no se ha cargado. Verifica tu conexión a internet.");
+        }
+        if (!firebase.apps || !firebase.apps.length) {
+            firebase.initializeApp(GASTRO_FIREBASE_CONFIG);
+        }
+        return firebase.auth();
+    },
+
     init() {
         this.loadAccessConfig();
         this.checkUrlGuestParam();
 
-        if (typeof firebase !== 'undefined' && firebase.auth) {
-            firebase.auth().onAuthStateChanged(async (user) => {
+        try {
+            const auth = this.ensureFirebase();
+            auth.onAuthStateChanged(async (user) => {
                 if (user) {
                     await this.handleUserAuthenticated(user);
                 } else {
@@ -1775,6 +1807,9 @@ const authManager = {
                     }
                 }
             });
+        } catch (e) {
+            console.warn("Firebase Auth init error:", e);
+            this.showLoginScreen();
         }
     },
 
@@ -1884,18 +1919,25 @@ const authManager = {
     },
 
     async loginWithGoogle() {
-        if (typeof firebase === 'undefined' || !firebase.auth) {
-            return showToast("Firebase Auth no está listo", "error");
-        }
         document.getElementById('authErrorAlert').style.display = 'none';
         try {
+            const auth = this.ensureFirebase();
             const provider = new firebase.auth.GoogleAuthProvider();
-            await firebase.auth().signInWithPopup(provider);
+            provider.setCustomParameters({ prompt: 'select_account' });
+            await auth.signInWithPopup(provider);
         } catch (err) {
             console.error("Google Auth error:", err);
             const alertBox = document.getElementById('authErrorAlert');
             if (alertBox) {
-                alertBox.innerText = "Error al conectar con Google: " + err.message;
+                let userMsg = err.message;
+                if (err.code === 'auth/unauthorized-domain') {
+                    userMsg = "Dominio no autorizado en Firebase. Para permitir acceso desde esta URL, ve a Firebase Console > Authentication > Settings > Authorized Domains y añade <code>" + window.location.hostname + "</code>. También puedes iniciar sesión abajo con Correo y Contraseña directamente.";
+                } else if (err.code === 'auth/popup-closed-by-user') {
+                    userMsg = "Ventana de inicio de sesión cerrada antes de completar.";
+                } else if (err.code === 'auth/popup-blocked') {
+                    userMsg = "El navegador bloqueó la ventana emergente. Por favor, permítela para continuar con Google.";
+                }
+                alertBox.innerHTML = "<strong>Error al conectar con Google:</strong> " + userMsg;
                 alertBox.style.display = 'block';
             }
         }
@@ -1908,11 +1950,16 @@ const authManager = {
 
         document.getElementById('authErrorAlert').style.display = 'none';
         try {
-            await firebase.auth().signInWithEmailAndPassword(email, pass);
+            const auth = this.ensureFirebase();
+            await auth.signInWithEmailAndPassword(email, pass);
         } catch (err) {
             const alertBox = document.getElementById('authErrorAlert');
             if (alertBox) {
-                alertBox.innerText = "Error de inicio de sesión: " + err.message;
+                let msg = err.message;
+                if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+                    msg = "Credenciales incorrectas o usuario no registrado aún. Si es tu primera vez, pulsa 'Crear Clave' para registrar tu contraseña.";
+                }
+                alertBox.innerHTML = "<strong>Error de inicio de sesión:</strong> " + msg;
                 alertBox.style.display = 'block';
             }
         }
@@ -1930,11 +1977,12 @@ const authManager = {
         }
 
         try {
-            await firebase.auth().createUserWithEmailAndPassword(email, pass);
-            showToast("Clave creada con éxito");
+            const auth = this.ensureFirebase();
+            await auth.createUserWithEmailAndPassword(email, pass);
+            showToast("✅ Clave creada con éxito. Iniciando sesión...", "success");
         } catch (err) {
             if (err.code === 'auth/email-already-in-use') {
-                showToast("Ese correo ya está registrado. Pulsa 'Iniciar Sesión'", "info");
+                showToast("Este correo ya tiene clave registrada. Pulsa 'Iniciar Sesión'", "info");
             } else {
                 showToast("Error al crear clave: " + err.message, "error");
             }
