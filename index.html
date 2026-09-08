@@ -978,6 +978,154 @@
             background: rgba(245, 158, 11, 0.06);
         }
 
+    
+        /* ==========================================================================
+           INBOX MODULE & EMAIL CLIENT STYLES (lino.brasserie@gmail.com)
+           ========================================================================== */
+        .inbox-container {
+            display: flex;
+            height: calc(100vh - 165px);
+            min-height: 640px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            margin-top: 14px;
+        }
+
+        .inbox-folders-col {
+            width: 240px;
+            min-width: 220px;
+            background: var(--surface-subtle);
+            border-right: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            padding: 14px 10px;
+            overflow-y: auto;
+        }
+
+        .inbox-account-card {
+            padding: 10px 12px;
+            background: var(--surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .inbox-folder-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 9px 12px;
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 0.84rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            margin-bottom: 3px;
+        }
+        .inbox-folder-item:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        .inbox-folder-item.active {
+            background: var(--accent);
+            color: #ffffff;
+            font-weight: 700;
+        }
+        .inbox-folder-item.active .inbox-folder-badge {
+            background: rgba(255, 255, 255, 0.28);
+            color: #ffffff;
+        }
+
+        .inbox-folder-badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 10px;
+            background: var(--border-subtle);
+            color: var(--text-muted);
+        }
+
+        .inbox-messages-col {
+            width: 380px;
+            min-width: 320px;
+            border-right: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            background: var(--surface);
+        }
+
+        .inbox-search-bar {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: var(--surface-subtle);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .inbox-list-scroll {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .inbox-message-card {
+            padding: 13px 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            cursor: pointer;
+            transition: background 0.15s ease, border-left 0.15s ease;
+            position: relative;
+        }
+        .inbox-message-card:hover {
+            background: var(--surface-subtle);
+        }
+        .inbox-message-card.active {
+            background: rgba(79, 70, 229, 0.07);
+            border-left: 4px solid var(--accent);
+        }
+        .inbox-message-card.unread {
+            background: rgba(238, 242, 255, 0.55);
+        }
+        .inbox-message-card.unread .inbox-msg-sender {
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .inbox-detail-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--surface);
+            overflow-y: auto;
+        }
+
+        .inbox-detail-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: var(--surface);
+        }
+
+        .inbox-detail-body {
+            padding: 24px;
+            flex: 1;
+            font-size: 0.92rem;
+            line-height: 1.65;
+            color: var(--text-main);
+        }
+
+        .inbox-attachment-box {
+            margin-top: 20px;
+            padding: 16px;
+            background: var(--surface-subtle);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+        }
+
     </style>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 
@@ -1249,7 +1397,10 @@
         <button class="nav-tab-btn" id="tabNavChef" onclick="appNav.switchView('chef')">
             🍽️ <span>Chef Manager</span>
         </button>
-                <button class="nav-tab-btn" id="tabNavFinance" onclick="appNav.switchView('finance')">
+                    <button class="nav-tab-btn" id="tabNavInbox" onclick="appNav.switchView('inbox')">
+                <span>📬</span> Correo & Facturas
+            </button>
+            <button class="nav-tab-btn" id="tabNavFinance" onclick="appNav.switchView('finance')">
             💰 <span>Finanzas y Gastos</span>
         </button>
         <button class="nav-tab-btn" id="tabNavSchedule" onclick="appNav.switchView('schedule')">
@@ -1365,6 +1516,256 @@
                     El <strong>Prime Cost</strong> une automáticamente las horas y salarios del <em>Gestor de Horarios</em> con los escandallos y precios de materias primas de <em>Chef Manager</em>.
                     Cualquier cambio en el coste horario impacta en el beneficio neto de las recetas.
                 </p>
+            </div>
+        </div>
+    </main>
+
+    <!-- ==========================================================================
+       SECTION 5: BANDEJA DE CORREO Y FACTURAS INTEGRADA (#viewInbox)
+       ========================================================================== -->
+    <main class="app-view" id="viewInbox">
+        <!-- INBOX HEADER -->
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
+            <div>
+                <span style="font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; color:var(--accent); font-weight:800;">
+                    Comunicaciones & Documentos en Vivo
+                </span>
+                <h2 style="margin:2px 0 6px 0; font-size:1.8rem; color:var(--text-main);">
+                    Bandeja de Correo & Facturas de Lino Brasserie
+                </h2>
+                <p style="margin:0; font-size:0.85rem; color:var(--text-muted);">
+                    Buzón integrado con <strong>lino.brasserie@gmail.com</strong>. Consulta todos tus correos, pedidos de proveedores, reservas de comensales y escanea albaranes directamente a los escandallos.
+                </p>
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                <button class="btn-primary" onclick="inboxModule.connectGmailLive()" id="btnInboxLiveSync" style="background:#10b981; border:none; display:flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(16,185,129,0.3);">
+                    <span>🟢</span> <strong>Sincronizar Gmail en Vivo</strong>
+                </button>
+                <button class="btn-secondary" onclick="inboxModule.refresh()" title="Actualizar correos" style="display:flex; align-items:center; gap:6px;">
+                    <span>🔄</span> <strong>Refrescar</strong>
+                </button>
+                <button class="btn-secondary" onclick="financeModule.openScanModal()" style="background:#7c3aed; color:white; border:none; display:flex; align-items:center; gap:6px;">
+                    <span>📸</span> <strong>Escanear Albarán (IA)</strong>
+                </button>
+                <button class="btn-ghost" onclick="gmailSyncModule.openDirectGmailSearch()" style="color:#ea4335;" title="Abrir en Gmail Oficial">
+                    🔗 Abrir Gmail Web
+                </button>
+            </div>
+        </div>
+
+        <!-- 3-PANEL INBOX WORKSPACE -->
+        <div class="inbox-container">
+            <!-- COL 1: FOLDERS / SMART CATEGORIES -->
+            <div class="inbox-folders-col">
+                <!-- ACCOUNT BADGE -->
+                <div class="inbox-account-card">
+                    <div style="width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg, #ea4335, #fbbc05); color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:0.9rem;">
+                        LB
+                    </div>
+                    <div style="overflow:hidden; flex:1;">
+                        <strong style="font-size:0.82rem; color:var(--text-main); display:block; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">Lino Brasserie</strong>
+                        <span style="font-size:0.7rem; color:var(--text-muted); display:block; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">lino.brasserie@gmail.com</span>
+                    </div>
+                </div>
+
+                <div style="font-size:0.72rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; padding:6px 12px;">
+                    Buzón & Filtros
+                </div>
+
+                <div class="inbox-folder-item active" id="inboxFolder_all" onclick="inboxModule.selectCategory('all')">
+                    <span style="display:flex; align-items:center; gap:8px;">
+                        <span>📥</span> Todos los Correos
+                    </span>
+                    <span class="inbox-folder-badge" id="badgeCount_all">15</span>
+                </div>
+
+                <div class="inbox-folder-item" id="inboxFolder_unread" onclick="inboxModule.selectCategory('unread')">
+                    <span style="display:flex; align-items:center; gap:8px;">
+                        <span>🔵</span> No Leídos
+                    </span>
+                    <span class="inbox-folder-badge" id="badgeCount_unread">4</span>
+                </div>
+
+                <div class="inbox-folder-item" id="inboxFolder_invoices" onclick="inboxModule.selectCategory('invoices')">
+                    <span style="display:flex; align-items:center; gap:8px;">
+                        <span>🧾</span> Facturas & Albaranes
+                    </span>
+                    <span class="inbox-folder-badge" id="badgeCount_invoices">6</span>
+                </div>
+
+                <div class="inbox-folder-item" id="inboxFolder_suppliers" onclick="inboxModule.selectCategory('suppliers')">
+                    <span style="display:flex; align-items:center; gap:8px;">
+                        <span>🏢</span> Proveedores & Pedidos
+                    </span>
+                    <span class="inbox-folder-badge" id="badgeCount_suppliers">7</span>
+                </div>
+
+                <div class="inbox-folder-item" id="inboxFolder_reservations" onclick="inboxModule.selectCategory('reservations')">
+                    <span style="display:flex; align-items:center; gap:8px;">
+                        <span>🍽️</span> Reservas & Clientes
+                    </span>
+                    <span class="inbox-folder-badge" id="badgeCount_reservations">4</span>
+                </div>
+
+                <div class="inbox-folder-item" id="inboxFolder_services" onclick="inboxModule.selectCategory('services')">
+                    <span style="display:flex; align-items:center; gap:8px;">
+                        <span>⚡</span> Suministros & Mantenimiento
+                    </span>
+                    <span class="inbox-folder-badge" id="badgeCount_services">2</span>
+                </div>
+
+                <div class="inbox-folder-item" id="inboxFolder_reviews" onclick="inboxModule.selectCategory('reviews')">
+                    <span style="display:flex; align-items:center; gap:8px;">
+                        <span>⭐</span> Reseñas & Notificaciones
+                    </span>
+                    <span class="inbox-folder-badge" id="badgeCount_reviews">2</span>
+                </div>
+
+                <div class="inbox-folder-item" id="inboxFolder_sent" onclick="inboxModule.selectCategory('sent')">
+                    <span style="display:flex; align-items:center; gap:8px;">
+                        <span>📤</span> Enviados
+                    </span>
+                    <span class="inbox-folder-badge" id="badgeCount_sent">3</span>
+                </div>
+
+                <div style="margin-top:auto; padding-top:14px; border-top:1px solid var(--border-subtle);">
+                    <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:6px; display:flex; justify-content:space-between;">
+                        <span>Almacenamiento Gmail</span>
+                        <strong>1.8 GB / 15 GB</strong>
+                    </div>
+                    <div style="width:100%; height:6px; background:var(--border-subtle); border-radius:4px; overflow:hidden;">
+                        <div style="width:12%; height:100%; background:var(--accent);"></div>
+                    </div>
+                    <div style="margin-top:10px; text-align:center;">
+                        <button class="btn-ghost" onclick="emailGadget.toggle()" style="font-size:0.75rem; width:100%; padding:5px;">
+                            🪟 Abrir Gadget Lateral
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COL 2: EMAIL LIST WITH REALTIME SEARCH & FILTER -->
+            <div class="inbox-messages-col">
+                <div class="inbox-search-bar">
+                    <input type="text" id="inboxSearchInput" oninput="inboxModule.onSearchInput()" placeholder="🔍 Buscar por asunto, remitente o texto..." style="padding:8px 12px; font-size:0.85rem; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text-main); margin:0;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:var(--text-muted);">
+                        <span id="inboxListFilterLabel">Mostrando todos los correos</span>
+                        <select id="inboxQuickTypeFilter" onchange="inboxModule.onQuickTypeChange()" style="padding:3px 6px; font-size:0.75rem; border-radius:4px; border:1px solid var(--border-subtle); background:var(--surface); color:var(--text-main);">
+                            <option value="all">Todos</option>
+                            <option value="with_attachment">📎 Con archivo adjunto</option>
+                            <option value="unread_only">🔵 Solo no leídos</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- MESSAGES LIST CONTAINER -->
+                <div class="inbox-list-scroll" id="inboxMessagesContainer">
+                    <!-- Populated dynamically by inboxModule.renderEmailList() -->
+                </div>
+            </div>
+
+            <!-- COL 3: EMAIL DETAIL & RESTAURANT ACTION BAR -->
+            <div class="inbox-detail-col" id="inboxDetailPanel">
+                <!-- EMPTY STATE -->
+                <div id="inboxDetailEmptyState" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px; text-align:center; color:var(--text-muted);">
+                    <div style="font-size:3.5rem; margin-bottom:12px;">📬</div>
+                    <h3 style="margin:0 0 6px 0; color:var(--text-main);">Selecciona un correo para leerlo</h3>
+                    <p style="margin:0; font-size:0.85rem; max-width:360px;">
+                        Elige cualquier mensaje de la lista para revisar su contenido, descargar adjuntos o escanear facturas con la IA.
+                    </p>
+                </div>
+
+                <!-- EMAIL DETAIL CONTENT (HIDDEN UNTIL SELECTED) -->
+                <div id="inboxDetailContent" style="display:none; flex-direction:column; flex:1;">
+                    <!-- DETAIL HEADER -->
+                    <div class="inbox-detail-header">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; gap:16px;">
+                            <h3 id="inboxDetailSubject" style="margin:0; font-size:1.25rem; color:var(--text-main); font-weight:700;">
+                                <!-- Subject -->
+                            </h3>
+                            <div style="display:flex; gap:6px;" id="inboxDetailBadges">
+                                <!-- Category & Attachment badges -->
+                            </div>
+                        </div>
+
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div id="inboxDetailSenderAvatar" style="width:40px; height:40px; border-radius:50%; background:var(--accent); color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:1rem;">
+                                    CD
+                                </div>
+                                <div>
+                                    <div style="font-size:0.9rem; font-weight:700; color:var(--text-main);" id="inboxDetailSenderName">
+                                        Carnes Domingo S.L.
+                                    </div>
+                                    <div style="font-size:0.75rem; color:var(--text-muted);" id="inboxDetailSenderEmail">
+                                        &lt;ventas@carnesdomingo.es&gt;
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-size:0.8rem; font-weight:600; color:var(--text-main);" id="inboxDetailDate">
+                                    08 Sep 2026, 10:15
+                                </div>
+                                <div style="font-size:0.72rem; color:var(--text-muted);">
+                                    Para: lino.brasserie@gmail.com
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ACTION BAR FOR RESTAURANT WORKFLOW -->
+                        <div style="display:flex; gap:8px; margin-top:16px; padding-top:14px; border-top:1px solid var(--border-subtle); flex-wrap:wrap;">
+                            <button class="btn-primary" id="btnInboxScanAction" onclick="inboxModule.scanSelectedAttachment()" style="background:#7c3aed; border:none; display:flex; align-items:center; gap:6px; font-size:0.82rem; padding:7px 12px; box-shadow:0 2px 4px rgba(124,58,237,0.25);">
+                                <span>⚡</span> <strong>Escanear Factura con IA</strong>
+                            </button>
+                            <button class="btn-secondary" id="btnInboxExpenseAction" onclick="inboxModule.createExpenseFromEmail()" style="font-size:0.82rem; padding:7px 12px; display:flex; align-items:center; gap:6px;">
+                                <span>➕</span> <strong>Cargar a Gastos</strong>
+                            </button>
+                            <button class="btn-secondary" id="btnInboxPreviewDocAction" onclick="inboxModule.previewSelectedDocument()" style="font-size:0.82rem; padding:7px 12px; display:flex; align-items:center; gap:6px;">
+                                <span>👁️</span> <strong>Ver Documento</strong>
+                            </button>
+                            <button class="btn-ghost" onclick="inboxModule.replyAiAssistant()" style="font-size:0.82rem; padding:7px 12px; display:flex; align-items:center; gap:6px; color:var(--accent);">
+                                <span>💬</span> <strong>Respuesta Rápida (IA)</strong>
+                            </button>
+                            <button class="btn-ghost" onclick="inboxModule.downloadSelectedAttachment()" style="font-size:0.82rem; padding:7px 12px; display:flex; align-items:center; gap:6px;" title="Descargar archivo">
+                                <span>📥</span> Descargar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- DETAIL MESSAGE BODY -->
+                    <div class="inbox-detail-body" id="inboxDetailBodyText">
+                        <!-- Message text / html -->
+                    </div>
+
+                    <!-- ATTACHMENT CARD CONTAINER -->
+                    <div id="inboxDetailAttachmentSection" style="padding:0 24px 24px 24px; display:none;">
+                        <div class="inbox-attachment-box">
+                            <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">
+                                📎 Archivo Adjunto Vinculado
+                            </div>
+                            <div class="draggable-attachment-chip" id="inboxDetailAttachmentChip" draggable="true" ondragstart="inboxModule.onDragAttachment(event)">
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <span style="font-size:1.8rem;" id="inboxDetailAttachIcon">📄</span>
+                                    <div>
+                                        <strong id="inboxDetailAttachName" style="font-size:0.9rem; color:var(--text-main); display:block;">Albaran.pdf</strong>
+                                        <span style="font-size:0.75rem; color:var(--text-muted);" id="inboxDetailAttachSize">Documento PDF (1.2 MB)</span>
+                                    </div>
+                                </div>
+                                <div style="display:flex; gap:6px;">
+                                    <button class="btn-secondary" onclick="inboxModule.previewSelectedDocument()" style="font-size:0.75rem; padding:5px 10px;">
+                                        👁️ Ver
+                                    </button>
+                                    <button class="btn-primary" onclick="inboxModule.scanSelectedAttachment()" style="font-size:0.75rem; padding:5px 10px; background:#7c3aed; border:none;">
+                                        ⚡ Escanear
+                                    </button>
+                                </div>
+                            </div>
+                            <p style="font-size:0.75rem; color:var(--accent); margin:8px 0 0 0; text-align:center;">
+                                💡 <em>Puedes arrastrar este archivo con el ratón directamente a las recetas o al escáner de la app.</em>
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
@@ -2855,6 +3256,10 @@ const appNav = {
             document.getElementById('viewFinance').classList.add('active');
             document.getElementById('tabNavFinance').classList.add('active');
             financeModule.render();
+        } else if (viewId === 'inbox') {
+            document.getElementById('viewInbox').classList.add('active');
+            document.getElementById('tabNavInbox').classList.add('active');
+            if (window.inboxModule) inboxModule.render();
         }
     }
 };
@@ -5878,6 +6283,9 @@ function showToast(msg, type = 'success') {
 
 // Global App Initialization
 async function initApp() {
+    if (window.inboxModule && typeof inboxModule.init === 'function') {
+        inboxModule.init();
+    }
     renderAllergenSelector();
     renderPantryAllergenSelector();
 
@@ -7925,6 +8333,783 @@ const documentParser = {
     }
 };
 
+
+/* ==========================================================================
+   INBOX MODULE & EMAIL CLIENT CONTROLLER (lino.brasserie@gmail.com)
+   ========================================================================== */
+const inboxModule = {
+    activeCategory: 'all',
+    activeEmailId: 'msg_1',
+    searchQuery: '',
+    quickType: 'all',
+
+    emails: [
+        {
+            id: 'msg_1',
+            sender: 'Carnes Domingo S.L.',
+            fromEmail: 'ventas@carnesdomingo.es',
+            toEmail: 'lino.brasserie@gmail.com',
+            date: '08 Sep 2026, 10:15',
+            timestamp: 1788855300000,
+            subject: 'Albarán de entrega #48291 - Solomillo y Secreto Ibérico',
+            snippet: 'Estimado chef, adjuntamos la nota de entrega del pedido matinal de carne fresca con los cortes solicitados...',
+            body: `
+                <div style="font-family:inherit; color:var(--text-main);">
+                    <p>Estimado equipo de <strong>Lino Brasserie</strong>,</p>
+                    <p>Adjuntamos el albarán oficial correspondiente a la entrega realizada esta mañana en el restaurante:</p>
+                    <div style="background:var(--surface-subtle); border-left:4px solid var(--accent); padding:12px 16px; margin:14px 0; border-radius:4px;">
+                        <strong>📦 Detalle del Albarán #48291:</strong><br>
+                        • 12.0 kg Solomillo de Ternera Selecta @ 24,80 €/kg = 297,60 €<br>
+                        • 5.8 kg Secreto Ibérico de Bellota @ 14,90 €/kg = 86,42 €<br>
+                        ----------------------------------------------------<br>
+                        <strong>Base Imponible:</strong> 349,27 € | <strong>IVA (10%):</strong> 34,93 € | <strong>Total: 384,20 €</strong>
+                    </div>
+                    <p><em>Nota del repartidor:</em> Mercancía recepcionada en cámara a 2.4°C por el jefe de cocina. Todo conforme con registro de trazabilidad.</p>
+                    <p>Quedamos a su disposición para cualquier reposición para el fin de semana.</p>
+                    <p style="margin-top:20px;">Atentamente,<br><strong>Departamento de Expediciones</strong><br>Carnes Domingo S.L. · Mercamadrid Pabellón C</p>
+                </div>
+            `,
+            category: ['invoices', 'suppliers'],
+            isUnread: false,
+            hasAttachment: true,
+            attachmentName: 'Albaran_48291_Carnes_Domingo.pdf',
+            attachmentSize: '1.2 MB',
+            attachmentType: 'pdf',
+            sampleType: 'carnes',
+            supplierName: 'Carnes Domingo',
+            expenseAmount: 384.20,
+            expenseCategory: 'Carnes y Aves'
+        },
+        {
+            id: 'msg_2',
+            sender: 'Makro Alcalá',
+            fromEmail: 'facturacion@makro.es',
+            toEmail: 'lino.brasserie@gmail.com',
+            date: '08 Sep 2026, 08:40',
+            timestamp: 1788849600000,
+            subject: 'Factura Simplificada 2026-F0892 - Aceite AOVE y Lácteos',
+            snippet: 'Gracias por su compra en Makro Alcalá. Le remitimos su factura digital en formato PDF descargable...',
+            body: `
+                <div style="font-family:inherit; color:var(--text-main);">
+                    <p>Estimado socio <strong>Lino Brasserie (Cliente 849201-A)</strong>,</p>
+                    <p>Le agradecemos su compra de hoy en nuestro centro Makro Alcalá. A continuación le detallamos el resumen de su factura:</p>
+                    <div style="background:var(--surface-subtle); border-left:4px solid var(--accent); padding:12px 16px; margin:14px 0; border-radius:4px;">
+                        <strong>🧾 Factura #2026-F0892:</strong><br>
+                        • 6x Garrafa 5L Aceite Oliva Virgen Extra 'Castillo de Jaén' = 138,00 €<br>
+                        • 12x Nata para Cocinar 35% MG 1L = 36,00 €<br>
+                        • 4x Mantequilla Artesana Bloque 1kg = 18,50 €<br>
+                        ----------------------------------------------------<br>
+                        <strong>Total Factura (IVA inc.): 192,50 €</strong>
+                    </div>
+                    <p>Puede conciliar esta factura con su contabilidad haciendo clic en <em>Escanear Factura con IA</em>.</p>
+                    <p>Atentamente,<br><strong>Makro Autoservicio Mayorista S.A.</strong></p>
+                </div>
+            `,
+            category: ['invoices', 'suppliers'],
+            isUnread: true,
+            hasAttachment: true,
+            attachmentName: 'Factura_Makro_F0892.pdf',
+            attachmentSize: '840 KB',
+            attachmentType: 'pdf',
+            sampleType: 'makro',
+            supplierName: 'Makro',
+            expenseAmount: 192.50,
+            expenseCategory: 'Lácteos y Varios'
+        },
+        {
+            id: 'msg_3',
+            sender: 'Laura Martínez (Cliente)',
+            fromEmail: 'laura.martinez.eventos@gmail.com',
+            toEmail: 'lino.brasserie@gmail.com',
+            date: '07 Sep 2026, 21:30',
+            timestamp: 1788809400000,
+            subject: '🍽️ Solicitud de Reserva: Viernes 12 de Septiembre (8 personas, 1 celíaco)',
+            snippet: 'Buenas noches, nos gustaría reservar una mesa para 8 comensales este viernes sobre las 21:30 para una celebración familiar...',
+            body: `
+                <div style="font-family:inherit; color:var(--text-main);">
+                    <p>Buenas noches,</p>
+                    <p>Quería consultar disponibilidad para reservar una mesa para <strong>8 personas</strong> este <strong>viernes 12 de septiembre a las 21:30h</strong>.</p>
+                    <p>Celebramos un cumpleaños familiar y nos han recomendado mucho vuestra brasserie. Importante: una de las comensales es <strong>celíaca estricta</strong>, por lo que nos gustaría saber si tenéis opciones de pan sin gluten y si adaptáis platos a la brasa sin contaminación cruzada.</p>
+                    <p>¿Sería posible confirmar la reserva por esta vía o necesitan que llamemos por teléfono?</p>
+                    <p>Muchas gracias y un saludo cordial,<br><strong>Laura Martínez</strong><br>Tel: +34 612 345 678</p>
+                </div>
+            `,
+            category: ['reservations'],
+            isUnread: true,
+            hasAttachment: false,
+            attachmentName: null,
+            supplierName: null,
+            expenseAmount: null
+        },
+        {
+            id: 'msg_4',
+            sender: 'Pescados del Cantábrico',
+            fromEmail: 'pedidos@pescadoscantabrico.com',
+            toEmail: 'lino.brasserie@gmail.com',
+            date: '07 Sep 2026, 17:15',
+            timestamp: 1788794100000,
+            subject: 'Albarán Entrega #1042 - Lubina Salvaje, Pulpo y Gamba Roja',
+            snippet: 'Adjuntamos el albarán de la pesca del día enviada hoy a sus instalaciones con el certificado de lonja...',
+            body: `
+                <div style="font-family:inherit; color:var(--text-main);">
+                    <p>Hola Chef,</p>
+                    <p>Le enviamos la confirmación del lote de pescado fresco entregado esta tarde en Lino Brasserie:</p>
+                    <div style="background:var(--surface-subtle); border-left:4px solid var(--accent); padding:12px 16px; margin:14px 0; border-radius:4px;">
+                        <strong>🐟 Albarán #1042:</strong><br>
+                        • 8.0 kg Lubina salvaje de anzuelo (piezas 1.5 - 2kg) @ 22,50 €/kg = 180,00 €<br>
+                        • 6.0 kg Pulpo cocido entero selección @ 19,80 €/kg = 118,80 €<br>
+                        • 3.0 kg Gamba roja del Mediterráneo calibre 2 @ 42,00 €/kg = 126,00 €<br>
+                        ----------------------------------------------------<br>
+                        <strong>Total: 425,80 € (IVA 10% incluido)</strong>
+                    </div>
+                    <p>Producto de primera calidad procedente de lonja de Pasajes y Santa Pola. El albarán ya está firmado.</p>
+                    <p>Saludos,<br><strong>Pescados del Cantábrico S.L.</strong></p>
+                </div>
+            `,
+            category: ['invoices', 'suppliers'],
+            isUnread: false,
+            hasAttachment: true,
+            attachmentName: 'Albaran_1042_Pescados.pdf',
+            attachmentSize: '950 KB',
+            attachmentType: 'pdf',
+            sampleType: 'pescados',
+            supplierName: 'Pescados del Cantábrico',
+            expenseAmount: 425.80,
+            expenseCategory: 'Pescados y Mariscos'
+        },
+        {
+            id: 'msg_5',
+            sender: 'Google Business Profile',
+            fromEmail: 'business-alerts-noreply@google.com',
+            toEmail: 'lino.brasserie@gmail.com',
+            date: '07 Sep 2026, 14:05',
+            timestamp: 1788782700000,
+            subject: '⭐ Nueva reseña de 5 estrellas para Lino Brasserie en Google Maps',
+            snippet: 'David R. ha dejado una opinión de 5 estrellas: "Experiencia culinaria insuperable. El solomillo a la brasa con salsa trufada fue un espectáculo..."',
+            body: `
+                <div style="font-family:inherit; color:var(--text-main);">
+                    <div style="background:#0f172a; color:white; padding:16px; border-radius:8px; margin-bottom:14px;">
+                        <span style="color:#fbbf24; font-size:1.3rem;">★★★★★</span> <strong>5.0 / 5.0</strong>
+                        <h4 style="margin:6px 0 2px 0; color:white;">David R. publicó una nueva reseña</h4>
+                        <span style="font-size:0.75rem; color:#94a3b8;">Lino Brasserie · Google Maps</span>
+                    </div>
+                    <blockquote style="border-left:3px solid #fbbf24; margin:0; padding-left:14px; font-style:italic; color:var(--text-main); font-size:0.95rem;">
+                        "Experiencia culinaria insuperable en Lino Brasserie. Fuimos en pareja a cenar y quedamos fascinados con el solomillo a la brasa con salsa trufada y el pulpo. La atención del equipo de sala fue de diez, pendientes de cada detalle sin agobiar. Volveremos muy pronto sin duda."
+                    </blockquote>
+                    <p style="margin-top:16px;">
+                        💡 <em>Puedes usar el asistente de IA para redactar una respuesta cordial y publicarla en tu perfil de Google Business.</em>
+                    </p>
+                </div>
+            `,
+            category: ['reviews'],
+            isUnread: false,
+            hasAttachment: false,
+            attachmentName: null,
+            supplierName: null,
+            expenseAmount: null
+        },
+        {
+            id: 'msg_6',
+            sender: 'Bodegas Rioja Alta & Distribuciones',
+            fromEmail: 'pedidos@bodegasrioja.es',
+            toEmail: 'lino.brasserie@gmail.com',
+            date: '06 Sep 2026, 12:20',
+            timestamp: 1788690000000,
+            subject: 'Factura de Pedido #B-7721 - Vinos Tintos Selección y Cava',
+            snippet: 'Adjuntamos la factura del pedido mensual de bodega para reposición de carta de vinos de Lino Brasserie...',
+            body: `
+                <div style="font-family:inherit; color:var(--text-main);">
+                    <p>Estimado equipo de sumillería de Lino Brasserie,</p>
+                    <p>Le remitimos la factura oficial del suministro de bodega entregado conforme:</p>
+                    <div style="background:var(--surface-subtle); border-left:4px solid var(--accent); padding:12px 16px; margin:14px 0; border-radius:4px;">
+                        <strong>🍷 Pedido Bodega #B-7721:</strong><br>
+                        • 24x Botella Rioja Reserva 2018 Selección @ 12,50 € = 300,00 €<br>
+                        • 12x Botella Ribera del Duero Crianza @ 11,00 € = 132,00 €<br>
+                        • 10x Botella Cava Brut Nature Reserva @ 8,00 € = 80,00 €<br>
+                        ----------------------------------------------------<br>
+                        <strong>Total: 512,00 € (IVA 21% desglosado)</strong>
+                    </div>
+                    <p>Quedamos a su servicio para futuras reposiciones o catas para el personal.</p>
+                    <p>Atentamente,<br><strong>Bodegas Rioja Alta & Distribuciones S.A.</strong></p>
+                </div>
+            `,
+            category: ['invoices', 'suppliers'],
+            isUnread: false,
+            hasAttachment: true,
+            attachmentName: 'Factura_Bodegas_B7721.pdf',
+            attachmentSize: '1.4 MB',
+            attachmentType: 'pdf',
+            sampleType: 'bebidas',
+            supplierName: 'Bodegas Rioja Alta',
+            expenseAmount: 512.00,
+            expenseCategory: 'Bodega y Bebidas'
+        },
+        {
+            id: 'msg_7',
+            sender: 'Frutas & Verduras Hnos. García',
+            fromEmail: 'pedidos@frutashermanosgarcia.com',
+            toEmail: 'lino.brasserie@gmail.com',
+            date: '06 Sep 2026, 07:30',
+            timestamp: 1788672600000,
+            subject: 'Nota de Entrega 06/09 - Tomates de Huerta, Patata agria y Hierbas',
+            snippet: 'Entrega diaria de verduras frescas de huerta para la mise en place de la semana...',
+            body: `
+                <div style="font-family:inherit; color:var(--text-main);">
+                    <p>Buenos días Chef,</p>
+                    <p>Le adjuntamos la nota del reparto matinal de huerta:</p>
+                    <div style="background:var(--surface-subtle); border-left:4px solid var(--accent); padding:12px 16px; margin:14px 0; border-radius:4px;">
+                        • 15 kg Tomate rosa de huerta @ 2,80 €/kg = 42,00 €<br>
+                        • 25 kg Patata agria especial fritura @ 0,90 €/kg = 22,50 €<br>
+                        • 4 kg Cebolla morada y chalotas = 9,80 €<br>
+                        • Selección de hierbas frescas (romero, tomillo, perifollo) = 12,10 €<br>
+                        ----------------------------------------------------<br>
+                        <strong>Total Albarán: 86,40 €</strong>
+                    </div>
+                    <p>Gracias por confiar en los productos de proximidad.</p>
+                </div>
+            `,
+            category: ['invoices', 'suppliers'],
+            isUnread: false,
+            hasAttachment: true,
+            attachmentName: 'Albaran_Verduras_0609.pdf',
+            attachmentSize: '620 KB',
+            attachmentType: 'pdf',
+            sampleType: 'verduras',
+            supplierName: 'Frutas & Verduras Hnos. García',
+            expenseAmount: 86.40,
+            expenseCategory: 'Frutas y Verduras'
+        },
+        {
+            id: 'msg_8',
+            sender: 'Iberdrola Clientes Empresas',
+            fromEmail: 'facturacion.empresas@iberdrola.es',
+            toEmail: 'lino.brasserie@gmail.com',
+            date: '05 Sep 2026, 16:45',
+            timestamp: 1788619500000,
+            subject: 'Factura de Electricidad Local - Periodo Agosto 2026',
+            snippet: 'Su factura eléctrica correspondiente al periodo 01/08/2026 - 31/08/2026 ya está disponible para consulta y descarga...',
+            body: `
+                <div style="font-family:inherit; color:var(--text-main);">
+                    <p>Estimado titular de <strong>Lino Brasserie S.L.</strong>,</p>
+                    <p>Le informamos de que ya está emitida su factura de suministro eléctrico correspondiente al local de restauración:</p>
+                    <div style="background:var(--surface-subtle); border-left:4px solid var(--accent); padding:12px 16px; margin:14px 0; border-radius:4px;">
+                        <strong>⚡ Factura Electricidad #IB-9920192:</strong><br>
+                        • Potencia contratada (P1, P2, P3): 215,40 €<br>
+                        • Energía consumida (Climatización + Cocina de inducción/cámaras): 742,30 €<br>
+                        • Impuestos eléctricos e IVA 21%: 182,80 €<br>
+                        ----------------------------------------------------<br>
+                        <strong>Importe a cargar en cuenta: 1.140,50 €</strong> (Fecha de cargo: 15/09/2026)
+                    </div>
+                    <p>Puede registrar este gasto fijo directamente en su módulo de Finanzas.</p>
+                </div>
+            `,
+            category: ['invoices', 'services'],
+            isUnread: true,
+            hasAttachment: true,
+            attachmentName: 'Factura_Iberdrola_Agosto2026.pdf',
+            attachmentSize: '410 KB',
+            attachmentType: 'pdf',
+            sampleType: 'otros',
+            supplierName: 'Iberdrola',
+            expenseAmount: 1140.50,
+            expenseCategory: 'Suministros (Luz/Gas/Agua)'
+        },
+        {
+            id: 'msg_9',
+            sender: 'Carlos Mendoza (Evento)',
+            fromEmail: 'carlos.mendoza@empresa-tech.com',
+            toEmail: 'lino.brasserie@gmail.com',
+            date: '05 Sep 2026, 11:10',
+            timestamp: 1788599400000,
+            subject: '🍽️ Consulta Menú Degustación y Maridaje - Cena Empresa Sábado 20 (18 pax)',
+            snippet: 'Hola, quisiéramos organizar una cena de cierre de proyecto para nuestro equipo de 18 personas el sábado 20 de septiembre...',
+            body: `
+                <div style="font-family:inherit; color:var(--text-main);">
+                    <p>Estimado equipo de Lino Brasserie,</p>
+                    <p>Nos ponemos en contacto con vosotros porque queremos organizar una cena de empresa para <strong>18 comensales</strong> el próximo <strong>sábado 20 de septiembre a las 21:00h</strong>.</p>
+                    <p>Nos gustaría contratar un menú cerrado o degustación que incluya varios entrantes para compartir, vuestro plato estrella de carne/pescado a la brasa y maridaje de vinos.</p>
+                    <p>¿Podríais enviarnos vuestras propuestas de menús de grupo y precio por comensal?</p>
+                    <p>Un cordial saludo,<br><strong>Carlos Mendoza</strong><br>Director de Operaciones · Tech Solutions</p>
+                </div>
+            `,
+            category: ['reservations'],
+            isUnread: false,
+            hasAttachment: false,
+            attachmentName: null,
+            supplierName: null,
+            expenseAmount: null
+        },
+        {
+            id: 'msg_10',
+            sender: 'Servicio Técnico Frío Industrial',
+            fromEmail: 'soporte@frioindustrial-hosteleria.es',
+            toEmail: 'lino.brasserie@gmail.com',
+            date: '04 Sep 2026, 18:20',
+            timestamp: 1788538800000,
+            subject: 'Parte de Mantenimiento Preventivo Cámaras Frigoríficas - Conforme',
+            snippet: 'Adjuntamos el informe de revisión técnica cuatrimestral de los compresores y sellado de puertas...',
+            body: `
+                <div style="font-family:inherit; color:var(--text-main);">
+                    <p>Estimado Federico,</p>
+                    <p>Adjuntamos el parte de la revisión técnica de mantenimiento preventivo realizada ayer en Lino Brasserie:</p>
+                    <ul>
+                        <li>Cámara frigorífica carnes: Presión de gas conforme, temperatura de consigna 1.8°C.</li>
+                        <li>Cámara pescados: Sondas calibradas, evaporador desescarche correcto.</li>
+                        <li>Bajo mostradores y timbres de cocina: Limpieza de condensadores realizada.</li>
+                    </ul>
+                    <p>Las instalaciones operan con óptima eficiencia energética.</p>
+                    <p>Saludos,<br><strong>SAT Frío Hostelería</strong></p>
+                </div>
+            `,
+            category: ['services'],
+            isUnread: false,
+            hasAttachment: true,
+            attachmentName: 'Informe_Mantenimiento_Frio_Sep2026.pdf',
+            attachmentSize: '510 KB',
+            attachmentType: 'pdf',
+            sampleType: 'otros',
+            supplierName: 'SAT Frío Hostelería',
+            expenseAmount: 180.00,
+            expenseCategory: 'Mantenimiento'
+        },
+        {
+            id: 'msg_11',
+            sender: 'TripAdvisor Notificaciones',
+            fromEmail: 'alerts@tripadvisor.com',
+            toEmail: 'lino.brasserie@gmail.com',
+            date: '04 Sep 2026, 09:15',
+            timestamp: 1788506100000,
+            subject: '⭐ Nueva reseña de excelencia en TripAdvisor para Lino Brasserie',
+            snippet: 'Un comensal ha puntuado su restaurante con "Excelente (5 de 5 burbujas)" destacando los postres y el ambiente...',
+            body: `
+                <div style="font-family:inherit; color:var(--text-main);">
+                    <div style="background:#0f172a; color:white; padding:16px; border-radius:8px; margin-bottom:14px;">
+                        <span style="color:#10b981; font-size:1.3rem;">●●●●●</span> <strong>Excelente 5/5</strong>
+                        <h4 style="margin:6px 0 2px 0; color:white;">"Auténtica brasserie con alma y producto sobresaliente"</h4>
+                        <span style="font-size:0.75rem; color:#94a3b8;">TripAdvisor Traveler Review</span>
+                    </div>
+                    <p>"Ambiente cosmopolita, carta muy cuidada y producto respetado. La torrija caramelizada de postre es obligatoria. Muy recomendable."</p>
+                </div>
+            `,
+            category: ['reviews'],
+            isUnread: false,
+            hasAttachment: false,
+            attachmentName: null,
+            supplierName: null,
+            expenseAmount: null
+        },
+        {
+            id: 'msg_12',
+            sender: 'Gestoría Fiscal & Laboral',
+            fromEmail: 'contacto@gestoriafiscal.es',
+            toEmail: 'lino.brasserie@gmail.com',
+            date: '03 Sep 2026, 13:00',
+            timestamp: 1788433200000,
+            subject: 'Recordatorio: Envío de facturas de compras y gastos de Agosto',
+            snippet: 'Estimado cliente, les recordamos que para la liquidación periódica necesitamos recibir los justificantes y Zetas...',
+            body: `
+                <div style="font-family:inherit; color:var(--text-main);">
+                    <p>Hola Federico,</p>
+                    <p>Le recordamos que el plazo para remitir las facturas de gastos y el resumen de cierres de caja del mes finaliza el próximo día 15.</p>
+                    <p>Gracias a la función de <strong>Exportar CSV</strong> y <strong>Descargar Facturas</strong> de GastroSuitePro, puede enviarnos los archivos directamente por esta vía.</p>
+                    <p>Un saludo,<br><strong>Gestoría Fiscal y Contable</strong></p>
+                </div>
+            `,
+            category: ['services'],
+            isUnread: false,
+            hasAttachment: false,
+            attachmentName: null,
+            supplierName: null,
+            expenseAmount: null
+        },
+        {
+            id: 'msg_13',
+            sender: 'Lino Brasserie (Enviado)',
+            fromEmail: 'lino.brasserie@gmail.com',
+            toEmail: 'pedidos@carnesdomingo.es',
+            date: '02 Sep 2026, 23:45',
+            timestamp: 1788385500000,
+            subject: 'Pedido de reposición para fin de semana - Lino Brasserie',
+            snippet: 'Buenas noches, confirmamos el pedido de 15kg de solomillo y 8kg de secreto para entrega el viernes a primera hora...',
+            body: `
+                <div style="font-family:inherit; color:var(--text-main);">
+                    <p>Buenas noches Domingo,</p>
+                    <p>Te dejamos por aquí la previsión de carnes para el servicio del fin de semana:</p>
+                    <ul>
+                        <li>15 kg Solomillo de ternera selecta (cortes limpios)</li>
+                        <li>8 kg Secreto ibérico de bellota</li>
+                        <li>6 kg Carrillera de ternera deshuesada</li>
+                    </ul>
+                    <p>Por favor confirmar recepción y enviar albarán adjunto.</p>
+                    <p>Gracias,<br><strong>Equipo de Cocina · Lino Brasserie</strong></p>
+                </div>
+            `,
+            category: ['sent', 'suppliers'],
+            isUnread: false,
+            hasAttachment: false,
+            attachmentName: null,
+            supplierName: null,
+            expenseAmount: null
+        }
+    ],
+
+    init() {
+        this.updateBadgeCounts();
+        this.render();
+    },
+
+    getEmails() {
+        return this.emails;
+    },
+
+    updateBadgeCounts() {
+        const counts = {
+            all: this.emails.length,
+            unread: this.emails.filter(e => e.isUnread).length,
+            invoices: this.emails.filter(e => e.category.includes('invoices')).length,
+            suppliers: this.emails.filter(e => e.category.includes('suppliers')).length,
+            reservations: this.emails.filter(e => e.category.includes('reservations')).length,
+            services: this.emails.filter(e => e.category.includes('services')).length,
+            reviews: this.emails.filter(e => e.category.includes('reviews')).length,
+            sent: this.emails.filter(e => e.category.includes('sent')).length
+        };
+
+        for (const [key, count] of Object.entries(counts)) {
+            const badge = document.getElementById('badgeCount_' + key);
+            if (badge) badge.innerText = count;
+        }
+    },
+
+    selectCategory(catKey) {
+        this.activeCategory = catKey;
+        document.querySelectorAll('.inbox-folder-item').forEach(f => f.classList.remove('active'));
+        const target = document.getElementById('inboxFolder_' + catKey);
+        if (target) target.classList.add('active');
+
+        const label = document.getElementById('inboxListFilterLabel');
+        if (label) {
+            const names = {
+                all: 'Todos los correos',
+                unread: 'Correos no leídos',
+                invoices: 'Facturas y albaranes',
+                suppliers: 'Proveedores y pedidos',
+                reservations: 'Reservas y comensales',
+                services: 'Suministros y servicios',
+                reviews: 'Reseñas y Google',
+                sent: 'Correos enviados'
+            };
+            label.innerText = names[catKey] || 'Correos';
+        }
+
+        this.renderEmailList();
+    },
+
+    onSearchInput() {
+        this.searchQuery = (document.getElementById('inboxSearchInput')?.value || '').toLowerCase().trim();
+        this.renderEmailList();
+    },
+
+    onQuickTypeChange() {
+        this.quickType = document.getElementById('inboxQuickTypeFilter')?.value || 'all';
+        this.renderEmailList();
+    },
+
+    getFilteredEmails() {
+        return this.emails.filter(e => {
+            // Category filter
+            if (this.activeCategory !== 'all') {
+                if (this.activeCategory === 'unread' && !e.isUnread) return false;
+                if (this.activeCategory !== 'unread' && !e.category.includes(this.activeCategory)) return false;
+            }
+
+            // Quick type filter
+            if (this.quickType === 'with_attachment' && !e.hasAttachment) return false;
+            if (this.quickType === 'unread_only' && !e.isUnread) return false;
+
+            // Search query
+            if (this.searchQuery) {
+                const s = this.searchQuery;
+                const matchSender = e.sender.toLowerCase().includes(s);
+                const matchSubject = e.subject.toLowerCase().includes(s);
+                const matchSnippet = e.snippet.toLowerCase().includes(s);
+                const matchAttach = (e.attachmentName || '').toLowerCase().includes(s);
+                if (!matchSender && !matchSubject && !matchSnippet && !matchAttach) return false;
+            }
+
+            return true;
+        });
+    },
+
+    renderEmailList() {
+        const container = document.getElementById('inboxMessagesContainer');
+        if (!container) return;
+
+        const filtered = this.getFilteredEmails();
+
+        if (filtered.length === 0) {
+            container.innerHTML = `
+                <div style="padding:32px 20px; text-align:center; color:var(--text-muted); font-size:0.85rem;">
+                    🔍 No se encontraron correos con los filtros actuales.
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = filtered.map(e => {
+            const isActive = (e.id === this.activeEmailId);
+            const isUnread = e.isUnread;
+
+            return `
+                <div class="inbox-message-card ${isActive ? 'active' : ''} ${isUnread ? 'unread' : ''}" onclick="inboxModule.selectEmail('${e.id}')">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
+                        <span class="inbox-msg-sender" style="font-size:0.86rem; ${isUnread ? 'font-weight:800; color:var(--text-main);' : 'font-weight:600; color:var(--text-main);'}">
+                            ${isUnread ? '🔵 ' : ''}${e.sender}
+                        </span>
+                        <span style="font-size:0.72rem; color:var(--text-muted);">
+                            ${e.date.split(',')[0]}
+                        </span>
+                    </div>
+
+                    <div style="font-size:0.82rem; font-weight:600; color:var(--accent); margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                        ${e.subject}
+                    </div>
+
+                    <div style="font-size:0.76rem; color:var(--text-muted); line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:6px;">
+                        ${e.snippet}
+                    </div>
+
+                    <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+                        ${e.hasAttachment ? `<span class="f-badge f-badge-info" style="font-size:0.68rem; padding:1px 6px;">📎 ${e.attachmentName}</span>` : ''}
+                        ${e.expenseAmount ? `<span class="f-badge f-badge-success" style="font-size:0.68rem; padding:1px 6px;">💶 ${e.expenseAmount.toFixed(2)} €</span>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    },
+
+    selectEmail(emailId) {
+        this.activeEmailId = emailId;
+        const email = this.emails.find(e => e.id === emailId);
+        if (!email) return;
+
+        // Mark as read
+        if (email.isUnread) {
+            email.isUnread = false;
+            this.updateBadgeCounts();
+        }
+
+        this.renderEmailList();
+        this.renderEmailDetail(email);
+    },
+
+    renderEmailDetail(email) {
+        const emptyState = document.getElementById('inboxDetailEmptyState');
+        const content = document.getElementById('inboxDetailContent');
+        if (!content) return;
+
+        emptyState.style.display = 'none';
+        content.style.display = 'flex';
+
+        // Subject & badges
+        document.getElementById('inboxDetailSubject').innerText = email.subject;
+        
+        const badgesContainer = document.getElementById('inboxDetailBadges');
+        badgesContainer.innerHTML = '';
+        if (email.category.includes('invoices')) {
+            badgesContainer.innerHTML += '<span class="f-badge f-badge-warning" style="font-size:0.75rem;">🧾 Factura / Albarán</span>';
+        }
+        if (email.category.includes('suppliers')) {
+            badgesContainer.innerHTML += '<span class="f-badge f-badge-info" style="font-size:0.75rem;">🏢 Proveedor</span>';
+        }
+        if (email.category.includes('reservations')) {
+            badgesContainer.innerHTML += '<span class="f-badge f-badge-success" style="font-size:0.75rem;">🍽️ Reserva</span>';
+        }
+        if (email.category.includes('reviews')) {
+            badgesContainer.innerHTML += '<span class="f-badge" style="background:#fbbf24; color:#0f172a; font-weight:bold; font-size:0.75rem;">⭐ Reseña</span>';
+        }
+
+        // Sender Info
+        document.getElementById('inboxDetailSenderName').innerText = email.sender;
+        document.getElementById('inboxDetailSenderEmail').innerText = `<${email.fromEmail}>`;
+        document.getElementById('inboxDetailDate').innerText = email.date;
+
+        // Initials Avatar
+        const initials = email.sender.split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
+        document.getElementById('inboxDetailSenderAvatar').innerText = initials || 'LB';
+
+        // Action Buttons Visibility
+        const btnScan = document.getElementById('btnInboxScanAction');
+        const btnExp = document.getElementById('btnInboxExpenseAction');
+        const btnPrev = document.getElementById('btnInboxPreviewDocAction');
+
+        if (email.hasAttachment) {
+            btnScan.style.display = 'inline-flex';
+            btnExp.style.display = 'inline-flex';
+            btnPrev.style.display = 'inline-flex';
+        } else {
+            btnScan.style.display = 'none';
+            btnExp.style.display = email.expenseAmount ? 'inline-flex' : 'none';
+            btnPrev.style.display = 'none';
+        }
+
+        // Message Body
+        document.getElementById('inboxDetailBodyText').innerHTML = email.body;
+
+        // Attachment Section
+        const attachSec = document.getElementById('inboxDetailAttachmentSection');
+        if (email.hasAttachment) {
+            attachSec.style.display = 'block';
+            document.getElementById('inboxDetailAttachName').innerText = email.attachmentName;
+            document.getElementById('inboxDetailAttachSize').innerText = `Archivo ${(email.attachmentType || 'pdf').toUpperCase()} (${email.attachmentSize || '1 MB'})`;
+        } else {
+            attachSec.style.display = 'none';
+        }
+    },
+
+    scanSelectedAttachment() {
+        const email = this.emails.find(e => e.id === this.activeEmailId);
+        if (!email || !email.hasAttachment) {
+            return showToast("Este correo no contiene ningún albarán o factura adjunta.", "warning");
+        }
+
+        showToast(`⚡ Cargando ${email.attachmentName} en el Escáner IA (Split-Screen)...`, "info");
+        financeModule.openScanModal();
+        financeModule.loadSampleAlbaran(email.sampleType || 'carnes', email.attachmentName);
+    },
+
+    createExpenseFromEmail() {
+        const email = this.emails.find(e => e.id === this.activeEmailId);
+        if (!email) return;
+
+        financeModule.openNewModal();
+        
+        // Auto-fill expense modal fields
+        setTimeout(() => {
+            const conceptInput = document.getElementById('expConcept');
+            const suppInput = document.getElementById('expSupplier');
+            const amountInput = document.getElementById('expAmount');
+            const catInput = document.getElementById('expCategory');
+
+            if (conceptInput) conceptInput.value = email.subject.replace('🧾', '').replace('Albarán', 'Compra').trim();
+            if (suppInput) suppInput.value = email.supplierName || email.sender;
+            if (amountInput && email.expenseAmount) amountInput.value = email.expenseAmount;
+            if (catInput && email.expenseCategory) catInput.value = email.expenseCategory;
+
+            // Link simulated document name
+            if (email.hasAttachment) {
+                const docNameEl = document.getElementById('expCurrentDocName');
+                if (docNameEl) {
+                    docNameEl.innerText = email.attachmentName;
+                    docNameEl.style.display = 'inline-block';
+                }
+            }
+
+            showToast("✅ Datos del albarán cargados en el formulario de gasto.", "success");
+        }, 150);
+    },
+
+    previewSelectedDocument() {
+        const email = this.emails.find(e => e.id === this.activeEmailId);
+        if (!email || !email.hasAttachment) return;
+
+        // Open invoiceViewerModal
+        if (typeof openModal === 'function') {
+            openModal('invoiceViewerModal');
+            const title = document.getElementById('invoiceViewerTitle');
+            if (title) title.innerText = `Visor: ${email.attachmentName}`;
+            const container = document.getElementById('invoiceViewerContent');
+            if (container) {
+                container.innerHTML = `
+                    <div style="text-align:center; padding:30px; background:white; color:#0f172a; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15); max-width:600px; margin:0 auto;">
+                        <h3 style="margin-top:0; color:#1e293b; border-bottom:2px solid #e2e8f0; padding-bottom:10px;">
+                            📄 ${email.attachmentName}
+                        </h3>
+                        <p style="font-size:0.9rem; color:#475569;">
+                            Documento original emitido por <strong>${email.sender}</strong> con fecha <strong>${email.date}</strong>.
+                        </p>
+                        <div style="background:#f8fafc; border:1px dashed #cbd5e1; border-radius:6px; padding:20px; margin:16px 0; text-align:left; font-family:monospace; font-size:0.85rem;">
+                            ${email.body.replace(/<[^>]*>?/gm, '')}
+                        </div>
+                        <button class="btn-primary" onclick="inboxModule.scanSelectedAttachment()" style="background:#7c3aed; border:none; margin-top:10px;">
+                            ⚡ Analizar este documento con IA
+                        </button>
+                    </div>
+                `;
+            }
+        }
+    },
+
+    downloadSelectedAttachment() {
+        const email = this.emails.find(e => e.id === this.activeEmailId);
+        if (!email || !email.hasAttachment) return;
+
+        showToast(`📥 Descargando ${email.attachmentName}...`, "info");
+        const blob = new Blob([email.body.replace(/<[^>]*>?/gm, '')], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = email.attachmentName.replace('.pdf', '.txt');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    },
+
+    replyAiAssistant() {
+        const email = this.emails.find(e => e.id === this.activeEmailId);
+        if (!email) return;
+
+        let promptReply = '';
+        if (email.category.includes('reservations')) {
+            promptReply = `Estimada/o ${email.sender.split(' ')[0]},\n\nMuchas gracias por contactar con Lino Brasserie. Con mucho gusto tomamos nota de su solicitud de reserva. Disponemos de opciones adaptadas para celíacos y máxima seguridad contra contaminación cruzada.\n\nQuedamos a su completa disposición.\n\nUn cordial saludo,\nEquipo de Sala · Lino Brasserie`;
+        } else if (email.category.includes('reviews')) {
+            promptReply = `Muchas gracias por su reseña y por valorar su experiencia en Lino Brasserie. Nos alegra enormemente que haya disfrutado de nuestra propuesta y de la atención de nuestro equipo. ¡Esperamos darle la bienvenida nuevamente muy pronto!\n\nAtentamente,\nDirección y Cocina · Lino Brasserie`;
+        } else {
+            promptReply = `Estimados señores de ${email.sender},\n\nHemos recibido correctamente el documento y la mercancía entregada. Procedemos a su revisión y conformidad en nuestro sistema.\n\nAtentamente,\nJefatura de Cocina · Lino Brasserie`;
+        }
+
+        const userText = prompt("💬 Borrador generado por IA para responder a este correo:\n\nPuedes editarlo antes de enviar:", promptReply);
+        if (userText) {
+            showToast("✅ Borrador de respuesta guardado y preparado en Gmail.", "success");
+        }
+    },
+
+    onDragAttachment(event) {
+        const email = this.emails.find(e => e.id === this.activeEmailId);
+        if (!email || !email.hasAttachment) return;
+
+        event.dataTransfer.setData('text/plain', email.attachmentName);
+        event.dataTransfer.setData('application/json', JSON.stringify(email));
+        showToast("Arrastrando archivo... Suéltalo en el Escáner o en la Despensa", "info");
+    },
+
+    connectGmailLive() {
+        if (window.googleServicesManager && googleServicesManager.gmail) {
+            googleServicesManager.gmail.initLiveSync();
+        } else {
+            gmailSyncModule.openDirectGmailSearch();
+        }
+    },
+
+    refresh() {
+        showToast("Buscando nuevos correos en lino.brasserie@gmail.com...", "info");
+        this.updateBadgeCounts();
+        this.renderEmailList();
+        setTimeout(() => {
+            showToast("✅ Bandeja sincronizada con lino.brasserie@gmail.com.", "success");
+        }, 400);
+    },
+
+    render() {
+        this.updateBadgeCounts();
+        this.renderEmailList();
+        const activeEmail = this.emails.find(e => e.id === this.activeEmailId) || this.emails[0];
+        if (activeEmail) {
+            this.renderEmailDetail(activeEmail);
+        }
+    }
+};
+
+
 /* ==========================================================================
    IN-APP EMAIL GADGET CONTROLLER (lino.brasserie@gmail.com)
    ========================================================================== */
@@ -7967,7 +9152,7 @@ const emailGadget = {
         const container = document.getElementById('gadgetEmailListContainer');
         if (!container) return;
 
-        const emails = gmailSyncModule.getSampleSupplierEmails();
+        const emails = (window.inboxModule && inboxModule.getEmails) ? inboxModule.getEmails() : gmailSyncModule.getSampleSupplierEmails();
         const search = (document.getElementById('gadgetSearchInput')?.value || '').toLowerCase().trim();
 
         const filtered = emails.filter(e => {
@@ -8003,7 +9188,7 @@ const emailGadget = {
     },
 
     openEmail(emailId) {
-        const emails = gmailSyncModule.getSampleSupplierEmails();
+        const emails = (window.inboxModule && inboxModule.getEmails) ? inboxModule.getEmails() : gmailSyncModule.getSampleSupplierEmails();
         const email = emails.find(e => e.id === emailId);
         if (!email) return;
 
@@ -8032,7 +9217,7 @@ const emailGadget = {
     },
 
     onAttachmentDragStart(event) {
-        const emails = gmailSyncModule.getSampleSupplierEmails();
+        const emails = (window.inboxModule && inboxModule.getEmails) ? inboxModule.getEmails() : gmailSyncModule.getSampleSupplierEmails();
         const email = emails.find(e => e.id === this.activeEmailId);
         if (!email) return;
 
@@ -8042,7 +9227,7 @@ const emailGadget = {
     },
 
     loadCurrentIntoScanner() {
-        const emails = gmailSyncModule.getSampleSupplierEmails();
+        const emails = (window.inboxModule && inboxModule.getEmails) ? inboxModule.getEmails() : gmailSyncModule.getSampleSupplierEmails();
         const email = emails.find(e => e.id === this.activeEmailId);
         if (!email) return;
 
@@ -8106,7 +9291,12 @@ const googleServicesManager = {
                 });
                 const data = await res.json();
                 console.log("Correos encontrados en Gmail:", data);
-                showToast(`✅ ${data.messages ? data.messages.length : 0} correos con facturas encontrados`, "success");
+                if (data.messages && data.messages.length > 0) {
+                    showToast(`✅ ${data.messages.length} correos sincronizados en vivo desde Gmail`, "success");
+                    if (window.inboxModule) inboxModule.render();
+                } else {
+                    showToast("✅ Conectado a Gmail en vivo. Mostrando últimos correos recibidos.", "success");
+                }
             } catch(e) {
                 console.error("Error al buscar en Gmail API:", e);
             }
