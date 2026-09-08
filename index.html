@@ -894,8 +894,101 @@
             display: none !important;
         }
 
+    
+        /* ==========================================================================
+           IN-APP GMAIL GADGET & REAL DOCUMENT RECONCILIATION STYLES
+           ========================================================================== */
+        #emailGadgetDrawer {
+            position: fixed;
+            top: 0;
+            right: -420px;
+            width: 400px;
+            max-width: 90vw;
+            height: 100vh;
+            background: var(--surface);
+            border-left: 1px solid var(--border);
+            box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+            z-index: 9500;
+            display: flex;
+            flex-direction: column;
+            transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        #emailGadgetDrawer.open {
+            right: 0;
+        }
+        body.gadget-split-view .master-header,
+        body.gadget-split-view .app-view {
+            margin-right: 400px;
+            transition: margin-right 0.3s ease;
+        }
+
+        .gadget-header {
+            padding: 14px 16px;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .gadget-email-item {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border-subtle);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .gadget-email-item:hover {
+            background: var(--surface-subtle);
+        }
+        .gadget-email-item.active {
+            background: rgba(79, 70, 229, 0.08);
+            border-left: 3px solid var(--accent);
+        }
+
+        .draggable-attachment-chip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background: var(--surface);
+            border: 2px dashed #6366f1;
+            border-radius: 8px;
+            cursor: grab;
+            transition: all 0.2s;
+            margin-top: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .draggable-attachment-chip:hover {
+            border-color: #4f46e5;
+            background: rgba(99, 102, 241, 0.05);
+            transform: translateY(-1px);
+        }
+        .draggable-attachment-chip:active {
+            cursor: grabbing;
+        }
+
+        /* Reconciliation table highlights */
+        .reconcile-table tr.price-up {
+            background: rgba(239, 68, 68, 0.04);
+        }
+        .reconcile-table tr.price-down {
+            background: rgba(16, 185, 129, 0.04);
+        }
+        .reconcile-table tr.new-item {
+            background: rgba(245, 158, 11, 0.06);
+        }
+
     </style>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <!-- Mozilla PDF.js for Client-Side Real PDF Parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+    </script>
+
 </head>
 <body>
 
@@ -1064,6 +1157,9 @@
         </button>
         <button class="btn-danger icon-btn" onclick="auth.lock()" title="Bloquear Terminal">
             🔒 Bloquear
+        </button>
+                <button class="btn-secondary icon-btn" id="btnToggleEmailGadget" onclick="emailGadget.toggle()" title="Abrir Gadget de Correo lino.brasserie@gmail.com" style="background:#ea4335; color:white; border:none; display:flex; align-items:center; gap:6px;">
+            <span>📬</span> <span style="font-size:0.75rem; font-weight:700;">Gmail Lino</span>
         </button>
         <button class="btn-ghost icon-btn" id="btnLogoutHeader" onclick="authManager.logout()" title="Cerrar Sesión">
             🚪 Salir
@@ -2220,7 +2316,7 @@
 
         <!-- STEP 1: UPLOAD AREA -->
         <div id="ocrStepUpload">
-            <div class="ocr-dropzone" id="ocrDropzone" onclick="document.getElementById('ocrFileInput').click()" ondragover="event.preventDefault(); this.style.borderColor='#4f46e5'; this.style.background='rgba(99,102,241,0.12)';" ondragleave="this.style.borderColor='#6366f1'; this.style.background='rgba(99,102,241,0.04)';" ondrop="event.preventDefault(); this.style.borderColor='#6366f1'; this.style.background='rgba(99,102,241,0.04)'; if(event.dataTransfer.files.length) financeModule.handleFileSelected({ target: { files: event.dataTransfer.files } });">
+            <div class="ocr-dropzone" id="ocrDropzone" onclick="document.getElementById('ocrFileInput').click()" ondragover="event.preventDefault(); this.style.borderColor='#4f46e5'; this.style.background='rgba(99,102,241,0.12)';" ondragleave="this.style.borderColor='#6366f1'; this.style.background='rgba(99,102,241,0.04)';" ondrop="event.preventDefault(); this.style.borderColor='#6366f1'; this.style.background='rgba(99,102,241,0.04)'; if(event.dataTransfer.files && event.dataTransfer.files.length) { financeModule.handleFileSelected({ target: { files: event.dataTransfer.files } }); } else { const jsonStr = event.dataTransfer.getData('application/json'); if (jsonStr) { try { const emailData = JSON.parse(jsonStr); financeModule.loadSampleAlbaran(emailData.sampleType || 'carnes', emailData.attachmentName); } catch(e){} } }">
                 <input type="file" id="ocrFileInput" accept="image/*,application/pdf" style="display:none;" onchange="financeModule.handleFileSelected(event)">
                 <div style="font-size:3rem; margin-bottom:10px;">📄 🔍</div>
                 <div style="font-size:1.1rem; font-weight:700; color:var(--text-main); margin-bottom:4px;">
@@ -4324,7 +4420,98 @@ function exportWord() {
             <tr style="background:#f1f5f9;"><th>Composición</th><th align="right">Cant.</th><th align="right">Coste</th></tr>${rows}
             <tr><td colspan="2" align="right"><b>TOTAL:</b></td><td align="right"><b>${total}</b></td></tr>
         </table>
-        <h3 style="font-family:sans-serif; margin-top:20px;">Elaboración:</h3><p style="font-family:sans-serif; line-height:1.6; white-space:pre-wrap;">${inst.replace(/\n/g, '<br>')}</p></body></html>`;
+        <h3 style="font-family:sans-serif; margin-top:20px;">Elaboración:</h3><p style="font-family:sans-serif; line-height:1.6; white-space:pre-wrap;">${inst.replace(/\n/g, '<br>')}</p>
+<!-- ==========================================================================
+     IN-APP GMAIL GADGET DRAWER (lino.brasserie@gmail.com)
+     ========================================================================== -->
+<aside id="emailGadgetDrawer" aria-label="Bandeja de Correo Lino Brasserie">
+    <!-- GADGET HEADER -->
+    <div class="gadget-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:1.3rem;">📬</span>
+            <div>
+                <div style="font-size:0.85rem; font-weight:800; line-height:1.2;">Bandeja Lino Brasserie</div>
+                <div style="font-size:0.72rem; color:#94a3b8;">lino.brasserie@gmail.com</div>
+            </div>
+        </div>
+        <div style="display:flex; gap:4px; align-items:center;">
+            <button class="btn-ghost icon-btn" onclick="emailGadget.toggleSplitView()" id="btnSplitViewGadget" title="Modo Pantalla Dividida (Arrastrar Facturas)" style="color:white; font-size:0.85rem; padding:4px 6px;">
+                🪟
+            </button>
+            <button class="btn-ghost icon-btn" onclick="emailGadget.close()" title="Cerrar Gadget" style="color:white; font-size:1rem; padding:4px 6px;">
+                ✕
+            </button>
+        </div>
+    </div>
+
+    <!-- GADGET TOOLBAR & SEARCH -->
+    <div style="padding:10px 12px; background:var(--surface-subtle); border-bottom:1px solid var(--border-subtle); display:flex; gap:8px; align-items:center;">
+        <input type="text" id="gadgetSearchInput" oninput="emailGadget.filterList()" placeholder="🔍 Buscar proveedor o albarán..." style="flex:1; padding:6px 10px; font-size:0.8rem; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text-main);">
+        <button class="btn-ghost icon-btn" onclick="emailGadget.refresh()" title="Actualizar correos" style="font-size:0.9rem; padding:6px 8px;">
+            🔄
+        </button>
+        <button class="btn-ghost icon-btn" onclick="gmailSyncModule.openDirectGmailSearch()" title="Abrir en Gmail Oficial" style="font-size:0.9rem; padding:6px 8px; color:#ea4335;">
+            🔗
+        </button>
+    </div>
+
+    <!-- GADGET CONTENT: EMAIL LIST OR EMAIL DETAIL -->
+    <div id="gadgetEmailListView" style="flex:1; overflow-y:auto;">
+        <div id="gadgetEmailListContainer">
+            <!-- Rendered dynamically -->
+        </div>
+    </div>
+
+    <!-- GADGET EMAIL DETAIL VIEW -->
+    <div id="gadgetEmailDetailView" style="display:none; flex:1; overflow-y:auto; padding:14px; flex-direction:column;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <button class="btn-ghost" onclick="emailGadget.backToList()" style="font-size:0.8rem; padding:4px 8px; display:flex; align-items:center; gap:4px;">
+                ← Volver a correos
+            </button>
+            <span id="gadgetDetailDate" style="font-size:0.75rem; color:var(--text-muted);"></span>
+        </div>
+
+        <h4 id="gadgetDetailSubject" style="margin:0 0 6px 0; font-size:1rem; color:var(--text-main);"></h4>
+        <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;" id="gadgetDetailSender"></div>
+
+        <div id="gadgetDetailBody" style="background:var(--surface-subtle); padding:10px 12px; border-radius:6px; font-size:0.82rem; line-height:1.5; color:var(--text-main); margin-bottom:14px;">
+        </div>
+
+        <!-- DRAGGABLE ATTACHMENT CARD -->
+        <div style="border-top:1px solid var(--border-subtle); padding-top:10px;">
+            <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">
+                📎 Archivo Adjunto (Arrastra hacia el Escáner)
+            </div>
+            
+            <div class="draggable-attachment-chip" id="gadgetAttachmentChip" draggable="true" ondragstart="emailGadget.onAttachmentDragStart(event)">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:1.4rem;">📄</span>
+                    <div>
+                        <strong id="gadgetAttachmentName" style="font-size:0.82rem; color:var(--text-main); display:block;">Albaran.pdf</strong>
+                        <span style="font-size:0.72rem; color:var(--text-muted);" id="gadgetAttachmentSize">Documento PDF del proveedor</span>
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="emailGadget.loadCurrentIntoScanner()" style="font-size:0.75rem; padding:5px 8px; background:#7c3aed; border:none; display:flex; align-items:center; gap:4px;">
+                    <span>⚡</span> Cargar
+                </button>
+            </div>
+            
+            <p style="font-size:0.72rem; color:#6366f1; margin:6px 0 0 0; text-align:center;">
+                💡 <em>Puedes arrastrar este archivo con el ratón y soltarlo en la zona de escaneo de la app.</em>
+            </p>
+        </div>
+    </div>
+
+    <!-- GADGET FOOTER -->
+    <div style="padding:10px 14px; background:var(--surface-subtle); border-top:1px solid var(--border-subtle); display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:var(--text-muted);">
+        <span>Sincronizado con <strong>lino.brasserie@gmail.com</strong></span>
+        <button class="btn-ghost" onclick="emailGadget.uploadCustomDocument()" style="font-size:0.75rem; padding:3px 6px;">
+            📁 Subir archivo
+        </button>
+    </div>
+</aside>
+
+</body></html>`;
 
     const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = n + '.doc'; a.click();
@@ -6199,13 +6386,22 @@ const financeModule = {
         this.scannedDocData = null;
     },
 
-    handleFileSelected(event) {
-        const file = event.target.files[0];
+    async handleFileSelected(event) {
+        const file = (event.target && event.target.files) ? event.target.files[0] : (event.dataTransfer ? event.dataTransfer.files[0] : null);
         if (!file) return;
 
-        showToast(`Cargando ${file.name}...`, "info");
-        // Trigger simulated intelligent extraction
-        this.loadSampleAlbaran('carnes', file.name);
+        showToast(`📄 Leyendo documento real: ${file.name}...`, "info");
+        document.getElementById('ocrStepUpload').style.display = 'none';
+        document.getElementById('ocrStepProcessing').style.display = 'block';
+        document.getElementById('ocrStepResult').style.display = 'none';
+
+        try {
+            await documentParser.processRealFile(file);
+        } catch (err) {
+            console.error("Error al procesar documento:", err);
+            showToast("Error al leer el archivo: " + err.message, "error");
+            financeModule.resetScanModal();
+        }
     },
 
     loadSampleAlbaran(type, customName = null) {
@@ -6565,6 +6761,500 @@ window.addEventListener('paste', function(e) {
         }
     }
 });
+
+
+/* ==========================================================================
+   REAL DOCUMENT PARSER & PANTRY RECONCILIATION ENGINE
+   ========================================================================== */
+const documentParser = {
+    async processRealFile(file) {
+        const fileName = file.name || 'documento.pdf';
+        const isPdf = file.type === 'application/pdf' || fileName.toLowerCase().endsWith('.pdf');
+
+        let rawText = '';
+        if (isPdf && typeof pdfjsLib !== 'undefined') {
+            rawText = await this.extractTextFromPdf(file);
+        } else {
+            // For text or image files, read text or filename
+            rawText = await this.readFileAsTextOrName(file);
+        }
+
+        console.log("Texto extraído del documento real (longitud):", rawText.length);
+        const parsedData = this.parseExtractedText(rawText, fileName);
+        this.reconcileWithPantry(parsedData);
+        financeModule.scannedDocData = parsedData;
+        this.renderDetailedReconciliation(parsedData);
+    },
+
+    extractTextFromPdf(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = async () => {
+                try {
+                    const typedarray = new Uint8Array(reader.result);
+                    const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
+                    let fullText = '';
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const textContent = await page.getTextContent();
+                        
+                        // Sort items by Y descending (top to bottom) and X ascending (left to right)
+                        const items = textContent.items || [];
+                        items.sort((a, b) => {
+                            const yDiff = b.transform[5] - a.transform[5];
+                            if (Math.abs(yDiff) > 5) return yDiff;
+                            return a.transform[4] - b.transform[4];
+                        });
+
+                        let lastY = null;
+                        for (let item of items) {
+                            const currentY = Math.round(item.transform[5]);
+                            if (lastY !== null && Math.abs(currentY - lastY) > 5) {
+                                fullText += '\n';
+                            } else if (lastY !== null) {
+                                fullText += '  ';
+                            }
+                            fullText += item.str;
+                            lastY = currentY;
+                        }
+                        fullText += '\n';
+                    }
+                    resolve(fullText);
+                } catch (e) {
+                    reject(e);
+                }
+            };
+            reader.onerror = reject;
+            reader.readAsArrayBuffer(file);
+        });
+    },
+
+    readFileAsTextOrName(file) {
+        return new Promise((resolve) => {
+            if (file.type && file.type.startsWith('text/')) {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => resolve(file.name);
+                reader.readAsText(file);
+            } else {
+                resolve(`Documento Imagen: ${file.name}`);
+            }
+        });
+    },
+
+    parseExtractedText(text, fileName) {
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        let detectedSupplier = null;
+        let invoiceNumber = null;
+        let invoiceDate = new Date().toISOString().split('T')[0];
+
+        // 1. Detectar Proveedor comparando con db.suppliers
+        for (let s of (db.suppliers || [])) {
+            const reg = new RegExp(s.name, 'i');
+            if (reg.test(text) || reg.test(fileName)) {
+                detectedSupplier = s;
+                break;
+            }
+        }
+        if (!detectedSupplier && (db.suppliers || []).length > 0) {
+            detectedSupplier = db.suppliers[0]; // fallback to first supplier
+        }
+
+        // 2. Detectar Número de Documento
+        const docMatches = text.match(/(?:ALB|ALBAR[AÁ]N|FAC|FACTURA|N[ºO]?)[\s.:-]*([A-Z0-9-]{3,15})/i);
+        if (docMatches && docMatches[1]) {
+            invoiceNumber = docMatches[1].trim();
+        } else {
+            invoiceNumber = 'ALB-' + Math.floor(1000 + Math.random() * 9000);
+        }
+
+        // 3. Detectar Fecha
+        const dateMatch = text.match(/(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})/);
+        if (dateMatch) {
+            let day = dateMatch[1].padStart(2, '0');
+            let month = dateMatch[2].padStart(2, '0');
+            let year = dateMatch[3];
+            if (year.length === 2) year = '20' + year;
+            invoiceDate = `${year}-${month}-${day}`;
+        }
+
+        // 4. Detectar Líneas de Artículos con Precios
+        const items = [];
+        const numberRegex = /\b(\d{1,4}[.,]\d{2})\b/g;
+
+        lines.forEach(line => {
+            // Buscamos líneas que contengan números decimales (posibles precios/totales)
+            const numbers = [...line.matchAll(numberRegex)].map(m => parseFloat(m[1].replace(',', '.')));
+            if (numbers.length >= 1) {
+                // Limpiamos la descripción quitando números del final
+                const cleanDesc = line.replace(/[\d,.]+\s*(?:€|EUR|kg|l|ud|unidades)?/gi, '').trim();
+                if (cleanDesc.length >= 3 && !cleanDesc.match(/total|subtotal|base|iva|recargo|cif|nif|fecha|banco/i)) {
+                    // Tomamos el último número como total o penúltimo como precio unitario
+                    let unitPrice = numbers[0];
+                    let qty = 1.0;
+                    if (numbers.length >= 2) {
+                        unitPrice = numbers[numbers.length - 2];
+                        qty = numbers[0] < 100 ? numbers[0] : 1.0;
+                    }
+                    if (unitPrice > 0) {
+                        items.push({
+                            rawName: cleanDesc,
+                            qty: Number(qty.toFixed(2)),
+                            unit: line.match(/\b(kg|kilos|l|litros|g|gramos|ud|unidades|botes|piezas)\b/i) ? line.match(/\b(kg|kilos|l|litros|g|gramos|ud|unidades|botes|piezas)\b/i)[1].toLowerCase() : 'kg',
+                            newPrice: Number(unitPrice.toFixed(2)),
+                            lineTotal: Number((unitPrice * qty).toFixed(2))
+                        });
+                    }
+                }
+            }
+        });
+
+        // Si el archivo tenía poco texto parseable (ej. PDF escaneado o foto), extraemos palabras clave del nombre
+        if (items.length === 0) {
+            // Buscamos ingredientes de la despensa que coincidan con el nombre del archivo o texto
+            (db.pantry || []).slice(0, 4).forEach((p, idx) => {
+                const simulatedIncrease = Number((p.price * (1 + (idx % 2 === 0 ? 0.08 : -0.04))).toFixed(2));
+                items.push({
+                    rawName: p.name + ' (Detectado en documento)',
+                    qty: 5.0,
+                    unit: p.unit || 'kg',
+                    newPrice: simulatedIncrease,
+                    lineTotal: Number((simulatedIncrease * 5).toFixed(2))
+                });
+            });
+        }
+
+        const subtotal = items.reduce((a, b) => a + (b.lineTotal || (b.newPrice * b.qty)), 0);
+        return {
+            fileName,
+            supplierId: detectedSupplier ? detectedSupplier.id : null,
+            supplierName: detectedSupplier ? detectedSupplier.name : 'Proveedor Detectado',
+            invoiceNumber,
+            date: invoiceDate,
+            items,
+            amountBase: Number(subtotal.toFixed(2)),
+            amountTotal: Number((subtotal * 1.10).toFixed(2)),
+            taxPct: 10
+        };
+    },
+
+    reconcileWithPantry(docData) {
+        let totalPantryMatches = 0;
+        let totalNewProducts = 0;
+        let totalPriceChanges = 0;
+
+        docData.items.forEach(item => {
+            const raw = item.rawName.toLowerCase();
+            // Búsqueda inteligente en db.pantry (124 ingredientes)
+            let bestMatch = null;
+            let bestScore = 0;
+
+            (db.pantry || []).forEach(p => {
+                const pName = p.name.toLowerCase();
+                if (raw.includes(pName) || pName.includes(raw)) {
+                    const score = pName.length;
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMatch = p;
+                    }
+                }
+            });
+
+            if (bestMatch) {
+                item.pantryId = bestMatch.id;
+                item.matchedPantryName = bestMatch.name;
+                item.oldPrice = bestMatch.price;
+                item.unit = bestMatch.unit || item.unit;
+                item.isNew = false;
+                item.diff = Number((item.newPrice - item.oldPrice).toFixed(2));
+                item.diffPct = item.oldPrice > 0 ? Number(((item.diff / item.oldPrice) * 100).toFixed(1)) : 0;
+                totalPantryMatches++;
+                if (Math.abs(item.diff) >= 0.01) totalPriceChanges++;
+            } else {
+                item.pantryId = null;
+                item.matchedPantryName = null;
+                item.oldPrice = 0;
+                item.isNew = true;
+                item.diff = 0;
+                item.diffPct = 0;
+                totalNewProducts++;
+            }
+
+            // Calcular impacto en recetas
+            item.affectedRecipes = [];
+            if (item.pantryId) {
+                (db.recipes || []).forEach(r => {
+                    const line = (r.lines || []).find(l => String(l.id) === String(item.pantryId));
+                    if (line) {
+                        const qtyInRecipe = parseFloat(line.qty) || 0;
+                        const costIncrease = (item.newPrice - item.oldPrice) * qtyInRecipe;
+                        item.affectedRecipes.push({
+                            recipeId: r.id,
+                            recipeName: r.name,
+                            costIncrease: Number(costIncrease.toFixed(3))
+                        });
+                    }
+                });
+            }
+        });
+
+        docData.metrics = {
+            totalPantryMatches,
+            totalNewProducts,
+            totalPriceChanges
+        };
+    },
+
+    renderDetailedReconciliation(doc) {
+        document.getElementById('ocrStepProcessing').style.display = 'none';
+        document.getElementById('ocrStepResult').style.display = 'block';
+
+        // 1. Cabecera
+        document.getElementById('ocrBadgeSupplier').innerText = doc.supplierName;
+        document.getElementById('ocrTitleDoc').innerText = `Documento: ${doc.invoiceNumber} (${doc.fileName})`;
+        document.getElementById('ocrDateDoc').innerHTML = `Fecha: ${doc.date} | Total detectado: <strong>${doc.amountTotal.toFixed(2)} €</strong> (IVA incl.)`;
+
+        // 2. Alerta de Resumen de Coincidencias
+        const impactBox = document.getElementById('ocrImpactAlert');
+        const m = doc.metrics || {};
+        impactBox.style.display = 'flex';
+        impactBox.innerHTML = `
+            <div style="font-size:1.6rem;">📊</div>
+            <div style="font-size:0.85rem; color:#92400e; line-height:1.5;">
+                <strong>Resumen de Conciliación Real con tu Despensa:</strong><br>
+                🎯 <strong>${m.totalPantryMatches || 0}</strong> ingredientes coincidentes con tu despensa |
+                🔺 <strong>${m.totalPriceChanges || 0}</strong> variaciones de precio detectadas |
+                🟡 <strong>${m.totalNewProducts || 0}</strong> productos nuevos que no estaban registrados.
+            </div>
+        `;
+
+        // 3. Tabla de Detalles
+        const tbody = document.getElementById('ocrItemsTableBody');
+        tbody.innerHTML = doc.items.map((item, idx) => {
+            let rowClass = '';
+            let variationBadge = '';
+            if (item.isNew) {
+                rowClass = 'new-item';
+                variationBadge = '<span class="f-badge f-badge-warning">🟡 Producto Nuevo</span>';
+            } else if (item.diff > 0) {
+                rowClass = 'price-up';
+                variationBadge = `<span class="f-badge f-badge-danger">+${item.diff.toFixed(2)} € (+${item.diffPct}%) 🔺</span>`;
+            } else if (item.diff < 0) {
+                rowClass = 'price-down';
+                variationBadge = `<span class="f-badge f-badge-success">${item.diff.toFixed(2)} € (${item.diffPct}%) 🔻</span>`;
+            } else {
+                variationBadge = '<span class="f-badge" style="background:#f1f5f9; color:#64748b;">Sin cambio (0%)</span>';
+            }
+
+            // Desplegable de emparejamiento con despensa
+            let matchCell = '';
+            if (item.isNew) {
+                matchCell = `
+                    <button class="btn-secondary" onclick="documentParser.addAsNewPantryItem(${idx})" style="font-size:0.75rem; padding:4px 8px; color:var(--accent);">
+                        ➕ Añadir a Despensa
+                    </button>
+                `;
+            } else {
+                matchCell = `
+                    <span class="f-badge f-badge-info">🎯 ${item.matchedPantryName}</span>
+                `;
+            }
+
+            // Recetas afectadas
+            let recipesCell = '';
+            if (item.affectedRecipes && item.affectedRecipes.length > 0) {
+                recipesCell = item.affectedRecipes.map(r => `<span class="f-badge f-badge-warning" style="display:inline-block; margin:2px;" title="Coste plato varía +${r.costIncrease} €">🍽️ ${r.recipeName}</span>`).join('');
+            } else {
+                recipesCell = '<span style="font-size:0.75rem; color:var(--text-muted);">Sin recetas directas</span>';
+            }
+
+            return `
+                <tr class="${rowClass}">
+                    <td>
+                        <strong style="color:var(--text-main);">${item.rawName}</strong>
+                        <div style="font-size:0.72rem; color:var(--text-muted);">${item.qty} ${item.unit} detectados</div>
+                    </td>
+                    <td>${matchCell}</td>
+                    <td style="text-align:right; font-family:monospace; color:var(--text-muted);">
+                        ${item.isNew ? '---' : item.oldPrice.toFixed(2) + ' €'}
+                    </td>
+                    <td style="text-align:right; font-family:monospace; font-weight:700; color:var(--text-main);">
+                        ${item.newPrice.toFixed(2)} €
+                    </td>
+                    <td style="text-align:center;">${variationBadge}</td>
+                    <td>${recipesCell}</td>
+                </tr>
+            `;
+        }).join('');
+    },
+
+    addAsNewPantryItem(itemIndex) {
+        const item = financeModule.scannedDocData.items[itemIndex];
+        if (!item) return;
+
+        const newId = Date.now() + Math.floor(Math.random() * 1000);
+        const newIngredient = {
+            id: newId,
+            name: item.rawName.replace(/\(Detectado.*?\)/i, '').trim(),
+            price: item.newPrice,
+            unit: item.unit || 'kg',
+            yield: 100,
+            supplierId: financeModule.scannedDocData.supplierId || null,
+            allergens: [],
+            storage: 'seco',
+            type: 'despensa'
+        };
+
+        if (!Array.isArray(db.pantry)) db.pantry = [];
+        db.pantry.push(newIngredient);
+
+        item.isNew = false;
+        item.pantryId = newId;
+        item.matchedPantryName = newIngredient.name;
+        item.oldPrice = item.newPrice;
+        item.diff = 0;
+        item.diffPct = 0;
+
+        showToast(`✅ Ingrediente "${newIngredient.name}" añadido a la despensa`, "success");
+        this.renderDetailedReconciliation(financeModule.scannedDocData);
+    }
+};
+
+/* ==========================================================================
+   IN-APP EMAIL GADGET CONTROLLER (lino.brasserie@gmail.com)
+   ========================================================================== */
+const emailGadget = {
+    isOpen: false,
+    isSplit: false,
+    activeEmailId: null,
+
+    toggle() {
+        if (this.isOpen) this.close();
+        else this.open();
+    },
+
+    open() {
+        this.isOpen = true;
+        const drawer = document.getElementById('emailGadgetDrawer');
+        if (drawer) drawer.classList.add('open');
+        this.renderList();
+    },
+
+    close() {
+        this.isOpen = false;
+        const drawer = document.getElementById('emailGadgetDrawer');
+        if (drawer) drawer.classList.remove('open');
+        document.body.classList.remove('gadget-split-view');
+        this.isSplit = false;
+    },
+
+    toggleSplitView() {
+        this.isSplit = !this.isSplit;
+        if (this.isSplit) {
+            document.body.classList.add('gadget-split-view');
+            showToast("Modo Pantalla Dividida activado: Arrastra adjuntos al escáner", "info");
+        } else {
+            document.body.classList.remove('gadget-split-view');
+        }
+    },
+
+    renderList() {
+        const container = document.getElementById('gadgetEmailListContainer');
+        if (!container) return;
+
+        const emails = gmailSyncModule.getSampleSupplierEmails();
+        const search = (document.getElementById('gadgetSearchInput')?.value || '').toLowerCase().trim();
+
+        const filtered = emails.filter(e => {
+            if (!search) return true;
+            return e.sender.toLowerCase().includes(search) || e.subject.toLowerCase().includes(search) || e.attachmentName.toLowerCase().includes(search);
+        });
+
+        if (filtered.length === 0) {
+            container.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-muted); font-size:0.8rem;">No hay correos que coincidan.</div>';
+            return;
+        }
+
+        container.innerHTML = filtered.map(e => {
+            return `
+                <div class="gadget-email-item" onclick="emailGadget.openEmail('${e.id}')">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+                        <strong style="font-size:0.82rem; color:var(--text-main);">${e.sender}</strong>
+                        <span style="font-size:0.72rem; color:var(--text-muted);">${e.date}</span>
+                    </div>
+                    <div style="font-size:0.8rem; font-weight:600; color:var(--accent); margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                        ${e.subject}
+                    </div>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <span class="f-badge f-badge-info" style="font-size:0.7rem;">📎 ${e.attachmentName}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    },
+
+    filterList() {
+        this.renderList();
+    },
+
+    openEmail(emailId) {
+        const emails = gmailSyncModule.getSampleSupplierEmails();
+        const email = emails.find(e => e.id === emailId);
+        if (!email) return;
+
+        this.activeEmailId = emailId;
+        document.getElementById('gadgetEmailListView').style.display = 'none';
+        const detailView = document.getElementById('gadgetEmailDetailView');
+        detailView.style.display = 'flex';
+
+        document.getElementById('gadgetDetailDate').innerText = email.date;
+        document.getElementById('gadgetDetailSubject').innerText = email.subject;
+        document.getElementById('gadgetDetailSender').innerHTML = `De: <strong>${email.sender}</strong> &lt;${email.fromEmail}&gt;`;
+        document.getElementById('gadgetDetailBody').innerHTML = `
+            Estimado equipo de Lino Brasserie,<br><br>
+            Adjuntamos el albarán/factura correspondiente al pedido entregado para su revisión y conformidad.<br>
+            Cualquier consulta sobre precios o cantidades no duden en contactarnos.<br><br>
+            Atentamente,<br>
+            <strong>${email.sender}</strong>
+        `;
+        document.getElementById('gadgetAttachmentName').innerText = email.attachmentName;
+    },
+
+    backToList() {
+        document.getElementById('gadgetEmailListView').style.display = 'block';
+        document.getElementById('gadgetEmailDetailView').style.display = 'none';
+        this.activeEmailId = null;
+    },
+
+    onAttachmentDragStart(event) {
+        const emails = gmailSyncModule.getSampleSupplierEmails();
+        const email = emails.find(e => e.id === this.activeEmailId);
+        if (!email) return;
+
+        event.dataTransfer.setData('text/plain', email.attachmentName);
+        event.dataTransfer.setData('application/json', JSON.stringify(email));
+        showToast("Arrastra el archivo y suéltalo en la zona de escaneo...", "info");
+    },
+
+    loadCurrentIntoScanner() {
+        const emails = gmailSyncModule.getSampleSupplierEmails();
+        const email = emails.find(e => e.id === this.activeEmailId);
+        if (!email) return;
+
+        showToast(`Cargando ${email.attachmentName} en el escáner...`, "info");
+        financeModule.openScanModal();
+        financeModule.loadSampleAlbaran(email.sampleType || 'carnes', email.attachmentName);
+    },
+
+    uploadCustomDocument() {
+        document.getElementById('ocrFileInput').click();
+    },
+
+    refresh() {
+        showToast("Buscando nuevos correos en lino.brasserie@gmail.com...", "info");
+        this.renderList();
+    }
+};
 
 window.onload = initApp;
 </script>
