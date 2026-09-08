@@ -1381,6 +1381,34 @@
 <!-- ==========================================================================
      MASTER APPLICATION HEADER
      ========================================================================== -->
+
+<!-- ==========================================================================
+     SUPER ADMIN MULTI-TENANT BAR (Solo visible para fefomartin00@gmail.com)
+     ========================================================================== -->
+<div id="superAdminTenantBar" class="no-print" style="display:none; background:linear-gradient(90deg, #1e1b4b 0%, #312e81 100%); color:#fff; padding:8px 24px; border-bottom:2px solid #6366f1; align-items:center; justify-content:space-between; font-size:0.88rem; position:sticky; top:0; z-index:1001; box-shadow:0 2px 10px rgba(0,0,0,0.3); flex-wrap:wrap; gap:12px;">
+    <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+        <span style="background:rgba(99,102,241,0.3); color:#e0e7ff; padding:4px 10px; border-radius:20px; font-weight:800; font-size:0.75rem; letter-spacing:0.5px; border:1px solid #818cf8; display:inline-flex; align-items:center; gap:5px;">
+            👑 SUPER ADMIN
+        </span>
+        <span style="color:#c7d2fe; font-size:0.82rem;">Sesión: <strong style="color:#fff;">fefomartin00@gmail.com</strong></span>
+        <span style="color:#6366f1; opacity:0.6;">|</span>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <label for="tenantSelectDropdown" style="color:#e0e7ff; font-weight:700; font-size:0.83rem;">🏢 Base de Datos / Empresa:</label>
+            <select id="tenantSelectDropdown" onchange="tenantManager.onSelectTenant(this.value)" style="background:#0f172a; color:#fff; border:1.5px solid #818cf8; border-radius:6px; padding:5px 12px; font-weight:700; cursor:pointer; outline:none; font-size:0.85rem;">
+                <option value="Calculadora-de-platos-Lino">Calculadora-de-platos-Lino (Lino Brasserie)</option>
+            </select>
+        </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:10px;">
+        <button onclick="tenantManager.openNewTenantModal()" class="btn-primary" style="background:#4f46e5; border:1px solid #818cf8; padding:6px 14px; font-size:0.82rem; font-weight:700; border-radius:6px; display:inline-flex; align-items:center; gap:6px; cursor:pointer; color:#fff; box-shadow:0 2px 6px rgba(79,70,229,0.4);">
+            <span>➕</span> <strong>Nueva Empresa (0 Datos)</strong>
+        </button>
+        <button onclick="tenantManager.syncActiveTenantToCloud()" class="btn-secondary" style="background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.25); padding:6px 12px; font-size:0.82rem; color:#fff; border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
+            <span>☁️</span> Sincronizar Empresa
+        </button>
+    </div>
+</div>
+
 <header class="master-header no-print">
     <div class="brand-container">
         <div class="brand-logo">🍳</div>
@@ -1549,6 +1577,10 @@
                     </button>
                 </div>
 
+                
+                <button class="btn-secondary" onclick="inboxModule.runDiagnostic()" title="Diagnóstico y Estado de Conexión con Gmail" style="display:flex; align-items:center; gap:6px;">
+                    <span>🩺</span> <strong>Diagnóstico Gmail</strong>
+                </button>
                 <button class="btn-secondary" onclick="inboxModule.refresh()" title="Actualizar correos" style="display:flex; align-items:center; gap:6px;">
                     <span>🔄</span> <strong>Refrescar</strong>
                 </button>
@@ -2796,6 +2828,115 @@
 <!-- ==========================================================================
      ADMIN ACCESS MANAGEMENT MODAL (PROPIETARIO)
      ========================================================================== -->
+
+<!-- ==========================================================================
+     TENANT MANAGER MODAL (CREACIÓN Y REPLICACIÓN DE EMPRESAS PARA SUPER ADMIN)
+     ========================================================================== -->
+<div id="tenantManagerModal" class="modal-overlay" style="display:none; z-index:9999;">
+    <div class="modal-card" style="max-width:560px; background:var(--surface); border-radius:12px; box-shadow:0 12px 30px rgba(0,0,0,0.35); overflow:hidden; border:1px solid var(--border);">
+        <div class="modal-header" style="background:#1e1b4b; color:#fff; padding:16px 20px; display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="display:flex; align-items:center; gap:8px; margin:0; font-size:1.15rem; color:#fff;">
+                <span>🏢</span> Replicar Sistema: Nueva Empresa
+            </h3>
+            <button class="modal-close" onclick="closeModal('tenantManagerModal')" style="background:none; border:none; color:#cbd5e1; font-size:1.4rem; cursor:pointer;">✕</button>
+        </div>
+        <div class="modal-body" style="padding:22px; max-height:75vh; overflow-y:auto;">
+            <div style="background:rgba(99,102,241,0.08); border-left:4px solid #6366f1; padding:12px 14px; border-radius:6px; margin-bottom:18px;">
+                <strong style="color:#4f46e5; font-size:0.85rem;">👑 Modo Creador / Super Admin:</strong>
+                <p style="font-size:0.82rem; color:var(--text-main); margin:4px 0 0 0; line-height:1.4;">
+                    Crea una nueva base de datos empresarial independiente. Puedes iniciarla con <strong>CERO datos</strong> (100% limpia para un nuevo cliente) o clonar la estructura de categorías.
+                </p>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:14px;">
+                <div>
+                    <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-main); margin-bottom:5px;">
+                        ID de la Base de Datos Firebase (Único):
+                    </label>
+                    <input type="text" id="newTenantIdInput" placeholder="Calculadora-de-platos-Nombre" style="width:100%; padding:9px 12px; border:1.5px solid var(--border); border-radius:8px; font-family:monospace; font-weight:700; font-size:0.9rem;" oninput="tenantManager.onTenantIdInput(this.value)">
+                    <span style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:3px;">Ejemplo: <code>Calculadora-de-platos-Bistro</code> o <code>Calculadora-de-platos-Madrid</code></span>
+                </div>
+
+                <div>
+                    <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-main); margin-bottom:5px;">
+                        Nombre Comercial del Restaurante / Empresa:
+                    </label>
+                    <input type="text" id="newTenantNameInput" placeholder="Ej: Bistro Central Madrid" style="width:100%; padding:9px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:0.9rem;">
+                </div>
+
+                <div>
+                    <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-main); margin-bottom:5px;">
+                        Correo de Acceso Exclusivo del Cliente (Opcional):
+                    </label>
+                    <input type="email" id="newTenantClientEmailInput" placeholder="ej: contacto@bistrocentral.com" style="width:100%; padding:9px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:0.9rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:3px;">
+                        Cuando este usuario inicie sesión con Google, quedará bloqueado exclusivamente a su empresa.
+                    </span>
+                </div>
+
+                <div>
+                    <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-main); margin-bottom:6px;">
+                        Modo de Inicialización:
+                    </label>
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                        <label style="display:flex; align-items:flex-start; gap:10px; padding:12px; border:1.5px solid #10b981; border-radius:8px; cursor:pointer; background:rgba(16,185,129,0.05);">
+                            <input type="radio" name="tenantInitMode" value="clean" checked style="margin-top:3px; accent-color:#10b981;">
+                            <div>
+                                <strong style="color:#065f46; font-size:0.88rem;">✨ Empezar con CERO datos (Recomendado)</strong>
+                                <p style="margin:3px 0 0 0; font-size:0.78rem; color:var(--text-muted); line-height:1.4;">
+                                    0 ingredientes, 0 recetas, 0 ventas Z, 0 gastos. El nuevo cliente empieza con su calculadora 100% limpia.
+                                </p>
+                            </div>
+                        </label>
+                        <label style="display:flex; align-items:flex-start; gap:10px; padding:12px; border:1px solid var(--border); border-radius:8px; cursor:pointer;">
+                            <input type="radio" name="tenantInitMode" value="clone_structure" style="margin-top:3px;">
+                            <div>
+                                <strong style="color:var(--text-main); font-size:0.88rem;">📋 Clonar Categorías y Proveedores Base</strong>
+                                <p style="margin:3px 0 0 0; font-size:0.78rem; color:var(--text-muted); line-height:1.4;">
+                                    Hereda las familias de compras y lista de proveedores, manteniendo 0 ingredientes y 0 recetas.
+                                </p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer" style="padding:14px 22px; display:flex; justify-content:flex-end; gap:10px; border-top:1px solid var(--border); background:var(--surface-subtle);">
+            <button class="btn-ghost" onclick="closeModal('tenantManagerModal')">Cancelar</button>
+            <button class="btn-primary" onclick="tenantManager.createTenantFromModal()" style="background:#4f46e5; border:none; padding:9px 20px; font-weight:700; border-radius:8px; box-shadow:0 3px 8px rgba(79,70,229,0.3);">
+                🚀 Crear y Conmutar a Nueva Empresa
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ==========================================================================
+     GMAIL DIAGNOSTIC & HEALTH CHECK MODAL
+     ========================================================================== -->
+<div id="gmailDiagnosticModal" class="modal-overlay" style="display:none; z-index:9999;">
+    <div class="modal-card" style="max-width:580px; background:var(--surface); border-radius:12px; box-shadow:0 12px 30px rgba(0,0,0,0.35); overflow:hidden; border:1px solid var(--border);">
+        <div class="modal-header" style="background:#0f172a; color:#fff; padding:16px 20px; display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="display:flex; align-items:center; gap:8px; margin:0; font-size:1.15rem; color:#fff;">
+                <span>🩺</span> Diagnóstico de Conexión con Gmail API
+            </h3>
+            <button class="modal-close" onclick="closeModal('gmailDiagnosticModal')" style="background:none; border:none; color:#cbd5e1; font-size:1.4rem; cursor:pointer;">✕</button>
+        </div>
+        <div class="modal-body" style="padding:22px; max-height:75vh; overflow-y:auto;" id="gmailDiagnosticResults">
+            <!-- Populated dynamically by inboxModule.runDiagnostic() -->
+            <div style="text-align:center; padding:30px;">
+                <div style="font-size:2.5rem; animation:pulse 1.5s infinite;">🔄</div>
+                <h4 style="margin:12px 0 0 0;">Ejecutando chequeo en tiempo real...</h4>
+            </div>
+        </div>
+        <div class="modal-footer" style="padding:14px 22px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border); background:var(--surface-subtle);">
+            <button class="btn-secondary" onclick="inboxModule.runDiagnostic()" style="display:flex; align-items:center; gap:6px;">
+                <span>🔄</span> Repetir Test
+            </button>
+            <button class="btn-primary" onclick="closeModal('gmailDiagnosticModal')">Entendido</button>
+        </div>
+    </div>
+</div>
+
 <div id="adminAccessModal" class="modal-overlay" style="display:none; z-index:9999;">
     <div class="modal-content" style="max-width:560px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
@@ -3388,6 +3529,343 @@ const appNav = {
 /* ==========================================================================
    AUTHENTICATION, OWNER & VISITOR ACCESS ENGINE
    ========================================================================== */
+
+/* ==========================================================================
+   MULTI-TENANT SAAS ENGINE (SUPER ADMIN & TENANT ISOLATION)
+   ========================================================================== */
+const tenantManager = {
+    activeTenantId: 'Calculadora-de-platos-Lino',
+    isSuperAdmin: false,
+    tenants: [
+        {
+            id: 'Calculadora-de-platos-Lino',
+            name: 'Calculadora-de-platos-Lino',
+            companyName: 'Lino Brasserie',
+            clientEmail: 'lino.brasserie@gmail.com',
+            createdAt: '2026-06-01T00:00:00.000Z',
+            isDefault: true
+        }
+    ],
+
+    init(isSuperAdmin = false) {
+        this.isSuperAdmin = isSuperAdmin;
+        this.loadTenantsRegistry();
+        this.updateTenantSelectorUI();
+
+        const bar = document.getElementById('superAdminTenantBar');
+        if (bar) {
+            bar.style.display = isSuperAdmin ? 'flex' : 'none';
+        }
+    },
+
+    lockToTenant(tenantId) {
+        this.isSuperAdmin = false;
+        const bar = document.getElementById('superAdminTenantBar');
+        if (bar) bar.style.display = 'none';
+
+        if (this.activeTenantId !== tenantId) {
+            this.switchTenant(tenantId, false);
+        }
+    },
+
+    loadTenantsRegistry() {
+        try {
+            const saved = localStorage.getItem('gsp_tenants_registry');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    this.tenants = parsed;
+                }
+            }
+        } catch (e) {
+            console.warn("Could not parse tenants registry:", e);
+        }
+
+        // Ensure default tenant always exists
+        if (!this.tenants.find(t => t.id === 'Calculadora-de-platos-Lino')) {
+            this.tenants.unshift({
+                id: 'Calculadora-de-platos-Lino',
+                name: 'Calculadora-de-platos-Lino',
+                companyName: 'Lino Brasserie',
+                clientEmail: 'lino.brasserie@gmail.com',
+                createdAt: new Date().toISOString(),
+                isDefault: true
+            });
+        }
+
+        const savedActive = localStorage.getItem('gsp_active_tenant_id');
+        if (savedActive && this.tenants.find(t => t.id === savedActive)) {
+            this.activeTenantId = savedActive;
+        } else {
+            this.activeTenantId = 'Calculadora-de-platos-Lino';
+        }
+    },
+
+    saveTenantsRegistry() {
+        localStorage.setItem('gsp_tenants_registry', JSON.stringify(this.tenants));
+        localStorage.setItem('gsp_active_tenant_id', this.activeTenantId);
+
+        // Sync registry to Cloud if Firebase is connected
+        if (window.firebaseSync && firebaseSync.isConnected && firebaseSync.db) {
+            try {
+                if (firebaseSync.dbType === 'firestore') {
+                    firebaseSync.db.collection('tenants_registry').doc('all').set({
+                        updatedAt: new Date().toISOString(),
+                        tenants: this.tenants
+                    });
+                } else {
+                    firebaseSync.db.ref('tenants_registry').set(this.tenants);
+                }
+            } catch (e) {
+                console.warn("Error saving tenants registry to cloud:", e);
+            }
+        }
+    },
+
+    updateTenantSelectorUI() {
+        const select = document.getElementById('tenantSelectDropdown');
+        if (!select) return;
+
+        select.innerHTML = this.tenants.map(t => 
+            `<option value="${t.id}" ${t.id === this.activeTenantId ? 'selected' : ''}>
+                ${t.name || t.id} (${t.companyName || 'Empresa'})
+            </option>`
+        ).join('');
+    },
+
+    findTenantByEmail(email) {
+        if (!email) return null;
+        const normalized = email.toLowerCase().trim();
+        return this.tenants.find(t => (t.clientEmail || '').toLowerCase().trim() === normalized) || null;
+    },
+
+    onSelectTenant(tenantId) {
+        if (!this.isSuperAdmin) {
+            showToast("Acceso restringido a Super Admin", "warning");
+            return;
+        }
+        this.switchTenant(tenantId, true);
+    },
+
+    async switchTenant(tenantId, syncOld = true) {
+        if (!tenantId) return;
+        const targetTenant = this.tenants.find(t => t.id === tenantId);
+        if (!targetTenant) {
+            showToast("Empresa no encontrada", "warning");
+            return;
+        }
+
+        // 1. Guardar datos de la empresa actual
+        if (syncOld) {
+            this.saveCurrentTenantDataLocally();
+            if (window.firebaseSync && firebaseSync.isConnected) {
+                await firebaseSync.pushToCloud(true);
+            }
+        }
+
+        // 2. Cambiar tenant activo
+        this.activeTenantId = tenantId;
+        localStorage.setItem('gsp_active_tenant_id', tenantId);
+        this.updateTenantSelectorUI();
+
+        // 3. Cargar datos de la nueva empresa
+        await this.loadTenantData(tenantId);
+
+        // 4. Reconectar listener en tiempo real de Firebase para el nuevo tenant
+        if (window.firebaseSync && firebaseSync.isConnected) {
+            firebaseSync.listenToRealtime();
+        }
+
+        showToast(`🏢 Empresa activa: ${targetTenant.name || targetTenant.id}`, "success");
+    },
+
+    saveCurrentTenantDataLocally() {
+        try {
+            if (typeof sanitizeDB === 'function') sanitizeDB();
+            const data = {
+                chef: JSON.parse(JSON.stringify(db)),
+                schedule: {
+                    staff: JSON.parse(JSON.stringify(app.staff || [])),
+                    shiftsList: JSON.parse(JSON.stringify(app.shiftsList || [])),
+                    roles: JSON.parse(JSON.stringify(app.roles || [])),
+                    closingDays: JSON.parse(JSON.stringify(app.closingDays || []))
+                }
+            };
+            localStorage.setItem('gsp_tenant_data_' + this.activeTenantId, JSON.stringify(data));
+        } catch (e) {
+            console.warn("Error saving current tenant data locally:", e);
+        }
+    },
+
+    async loadTenantData(tenantId) {
+        // First check local tenant cache
+        const local = localStorage.getItem('gsp_tenant_data_' + tenantId);
+        if (local) {
+            try {
+                const parsed = JSON.parse(local);
+                if (parsed.chef) {
+                    db = parsed.chef;
+                }
+                if (parsed.schedule && parsed.schedule.staff) {
+                    app.staff = parsed.schedule.staff;
+                }
+            } catch (e) {
+                console.warn("Error loading cached tenant data:", e);
+            }
+        } else if (tenantId === 'Calculadora-de-platos-Lino') {
+            // Lino default data is retained from active memory
+        } else {
+            // New clean tenant with 0 data
+            this.initializeCleanTenantData();
+        }
+
+        // Pull fresh data from cloud if connected
+        if (window.firebaseSync && firebaseSync.isConnected) {
+            await firebaseSync.pullFromCloud(true);
+        }
+
+        if (typeof sanitizeDB === 'function') sanitizeDB();
+        if (typeof updateAllRecipeCosts === 'function') updateAllRecipeCosts();
+        if (typeof saveDB === 'function') await saveDB();
+        if (app && typeof app.save === 'function') app.save(true);
+        if (typeof refreshUI === 'function') refreshUI();
+        if (window.financeModule && typeof financeModule.render === 'function') {
+            financeModule.render();
+        }
+        if (typeof updatePrimeDashboard === 'function') updatePrimeDashboard();
+    },
+
+    initializeCleanTenantData() {
+        db.pantry = [];
+        db.recipes = [];
+        db.expenses = [];
+        db.sales = [];
+        db.salesZ = [];
+        db.dailySales = [];
+        db.suppliers = [];
+        db.categories = ["Carnes", "Pescados", "Verduras", "Lácteos", "Bebidas", "Secos"];
+        app.staff = [];
+        app.shiftsList = [];
+    },
+
+    openNewTenantModal() {
+        if (!this.isSuperAdmin) {
+            showToast("Solo el Super Admin puede crear nuevas empresas", "warning");
+            return;
+        }
+        document.getElementById('newTenantIdInput').value = '';
+        document.getElementById('newTenantNameInput').value = '';
+        document.getElementById('newTenantClientEmailInput').value = '';
+        openModal('tenantManagerModal');
+    },
+
+    onTenantIdInput(val) {
+        const slug = val.replace(/[^a-zA-Z0-9_-]/g, '-');
+        if (slug !== val) {
+            document.getElementById('newTenantIdInput').value = slug;
+        }
+    },
+
+    async createTenantFromModal() {
+        const idInput = document.getElementById('newTenantIdInput');
+        const nameInput = document.getElementById('newTenantNameInput');
+        const emailInput = document.getElementById('newTenantClientEmailInput');
+        const modeRadio = document.querySelector('input[name="tenantInitMode"]:checked');
+
+        const rawId = (idInput ? idInput.value : '').trim();
+        const tenantName = (nameInput ? nameInput.value : '').trim() || rawId;
+        const clientEmail = (emailInput ? emailInput.value : '').trim().toLowerCase();
+        const initMode = modeRadio ? modeRadio.value : 'clean';
+
+        if (!rawId) {
+            showToast("Por favor introduce un ID para la base de datos", "warning");
+            return;
+        }
+
+        const tenantId = rawId.startsWith('Calculadora-de-platos-') ? rawId : ('Calculadora-de-platos-' + rawId);
+
+        if (this.tenants.find(t => t.id.toLowerCase() === tenantId.toLowerCase())) {
+            showToast("Ya existe una empresa con ese ID", "warning");
+            return;
+        }
+
+        const newTenant = {
+            id: tenantId,
+            name: tenantId,
+            companyName: tenantName,
+            clientEmail: clientEmail,
+            createdAt: new Date().toISOString(),
+            initMode: initMode
+        };
+
+        // Guardar la empresa actual antes de crear la nueva
+        this.saveCurrentTenantDataLocally();
+
+        // Inicializar datos para el nuevo tenant
+        if (initMode === 'clean') {
+            const cleanData = {
+                chef: {
+                    pantry: [],
+                    recipes: [],
+                    expenses: [],
+                    sales: [],
+                    salesZ: [],
+                    dailySales: [],
+                    suppliers: [],
+                    categories: ["Carnes", "Pescados", "Verduras", "Lácteos", "Bebidas", "Secos"]
+                },
+                schedule: {
+                    staff: [],
+                    shiftsList: [],
+                    roles: ["Cocina", "Sala", "Barra", "Limpieza"],
+                    closingDays: []
+                }
+            };
+            localStorage.setItem('gsp_tenant_data_' + tenantId, JSON.stringify(cleanData));
+        } else {
+            // Clonar estructura de categorías y proveedores pero sin ingredientes ni platos
+            const structData = {
+                chef: {
+                    pantry: [],
+                    recipes: [],
+                    expenses: [],
+                    sales: [],
+                    salesZ: [],
+                    dailySales: [],
+                    suppliers: JSON.parse(JSON.stringify(db.suppliers || [])),
+                    categories: JSON.parse(JSON.stringify(db.categories || []))
+                },
+                schedule: {
+                    staff: [],
+                    shiftsList: [],
+                    roles: JSON.parse(JSON.stringify(app.roles || [])),
+                    closingDays: []
+                }
+            };
+            localStorage.setItem('gsp_tenant_data_' + tenantId, JSON.stringify(structData));
+        }
+
+        this.tenants.push(newTenant);
+        this.saveTenantsRegistry();
+        this.updateTenantSelectorUI();
+
+        closeModal('tenantManagerModal');
+        showToast(`🎉 Nueva empresa creada con CERO datos: ${newTenant.name}`, "success");
+
+        // Conmutar de inmediato a la nueva empresa
+        await this.switchTenant(tenantId, false);
+    },
+
+    async syncActiveTenantToCloud() {
+        if (!window.firebaseSync || !firebaseSync.isConnected) {
+            showToast("Firebase no está conectado aún", "warning");
+            return;
+        }
+        await firebaseSync.pushToCloud(false);
+    }
+};
+
+
 const authManager = {
     OWNER_EMAIL: "fefomartin00@gmail.com",
     currentUser: null,
@@ -3475,15 +3953,34 @@ const authManager = {
         const email = (user.email || '').toLowerCase().trim();
         this.currentUser = user;
 
-        // Acceso universal: cualquier cuenta de Google autenticada es bienvenida con rol operativo completo
-        this.setRole('owner', user.displayName || user.email);
-        showToast("👑 Sesión iniciada: " + email, "success");
+        const isSuperAdmin = (email === 'fefomartin00@gmail.com');
+
+        // Multi-Tenant initialization
+        if (window.tenantManager) {
+            if (isSuperAdmin) {
+                tenantManager.init(true);
+            } else if (email === 'lino.brasserie@gmail.com') {
+                tenantManager.lockToTenant('Calculadora-de-platos-Lino');
+            } else {
+                const matched = tenantManager.findTenantByEmail(email);
+                if (matched) {
+                    tenantManager.lockToTenant(matched.id);
+                } else {
+                    tenantManager.lockToTenant('Calculadora-de-platos-Lino');
+                }
+            }
+        }
+
+        // Asignar rol operativo
+        this.setRole(isSuperAdmin ? 'super_admin' : 'owner', user.displayName || user.email);
+        showToast(isSuperAdmin ? "👑 Bienvenido Super Admin: " + email : "🟢 Sesión iniciada: " + email, "success");
 
         // Notificar y vincular cuenta en el módulo de Gmail
         if (window.inboxModule && typeof inboxModule.onUserLoggedIn === 'function') {
             inboxModule.onUserLoggedIn(user);
         }
     },
+
 
     setRole(role, displayName) {
         this.currentRole = role;
@@ -3501,16 +3998,28 @@ const authManager = {
         const roleBadge = document.getElementById('userRoleBadge');
         const adminBtn = document.getElementById('btnAdminAccess');
 
-        if (this.currentRole === 'owner') {
+        if (this.currentRole === 'super_admin') {
             document.body.classList.remove('read-only-mode');
             if (roleBadge) {
-                roleBadge.innerText = '👑 ' + (displayName || 'PROPIETARIO');
+                roleBadge.innerText = '👑 SUPER ADMIN (' + (displayName || 'Fede') + ')';
+                roleBadge.style.background = '#312e81';
+                roleBadge.style.color = '#e0e7ff';
+                roleBadge.style.display = 'inline-block';
+                roleBadge.style.border = '1px solid #818cf8';
+            }
+            if (adminBtn) adminBtn.style.display = 'inline-flex';
+        } else if (this.currentRole === 'owner') {
+            document.body.classList.remove('read-only-mode');
+            if (roleBadge) {
+                const tenantLabel = (window.tenantManager && tenantManager.activeTenantId === 'Calculadora-de-platos-Lino') ? 'LINO BRASSERIE' : (displayName || 'PROPIETARIO');
+                roleBadge.innerText = '🏢 ' + tenantLabel;
                 roleBadge.style.background = '#065f46';
                 roleBadge.style.color = '#a7f3d0';
                 roleBadge.style.display = 'inline-block';
             }
             if (adminBtn) adminBtn.style.display = 'inline-flex';
         } else if (this.currentRole === 'visitor') {
+
             document.body.classList.add('read-only-mode');
             if (roleBadge) {
                 roleBadge.innerText = '👁️ SOLO LECTURA (' + (displayName || 'Invitado') + ')';
@@ -3538,6 +4047,10 @@ const authManager = {
             if (result && result.credential && result.credential.accessToken) {
                 const token = result.credential.accessToken;
                 sessionStorage.setItem('gsp_google_access_token', token);
+                localStorage.setItem('gsp_google_access_token', token);
+                if (result.user && result.user.email) {
+                    localStorage.setItem('gsp_active_gmail_account', result.user.email);
+                }
                 if (window.googleServicesManager && googleServicesManager.gmail) {
                     googleServicesManager.gmail.accessToken = token;
                     googleServicesManager.gmail.isConnected = true;
@@ -3546,6 +4059,7 @@ const authManager = {
                     inboxModule.onGmailConnected();
                 }
             }
+
         } catch (err) {
             console.error("Google Auth error:", err);
             const alertBox = document.getElementById('authErrorAlert');
@@ -4165,113 +4679,97 @@ const firebaseSync = {
     },
 
     // PULL DATA FROM CLOUD INTO LOCAL STATE (AUTO-DISCOVERY DE COLECCIONES EXISTENTES)
-    async pullFromCloud(silent = false) {
+        async pullFromCloud(silent = false) {
         if (!this.isConnected || !this.db) {
             if (!silent) showToast("Firebase no está conectado aún", "warning");
             return;
         }
 
-        if (!silent) showToast("Buscando y descargando datos de Firebase...", "info");
+        const tenantId = this.getActiveTenantId();
+        if (!silent) showToast(`Buscando datos de "${tenantId}" en Firebase...`, "info");
         try {
             let loadedSomething = false;
             if (this.dbType === 'firestore') {
-                // 1. Probar documentos maestros comunes
-                const masterDocNames = ['gastro_master/state', 'chef_v68/data', 'calculadora_platos/main', 'restaurante/config'];
-                for (let path of masterDocNames) {
-                    try {
-                        const [col, docId] = path.split('/');
-                        const snap = await this.db.collection(col).doc(docId).get();
-                        if (snap.exists) {
-                            const data = snap.data();
-                            if (data.chef) { 
-                                db = { ...db, ...data.chef }; 
-                                if (data.chef.expenses && Array.isArray(data.chef.expenses)) {
-                                    db.expenses = data.chef.expenses;
-                                }
-                                loadedSomething = true; 
-                            }
-                            if (data.pantry && Array.isArray(data.pantry)) { db.pantry = data.pantry.map((p, i) => this.normalizePantryItem(p, p.id || i)); loadedSomething = true; }
-                            if (data.recipes && Array.isArray(data.recipes)) { db.recipes = data.recipes.map((r, i) => this.normalizeRecipeItem(r, r.id || i)); loadedSomething = true; }
-                            if (data.schedule) {
-                                if (data.schedule.staff) app.staff = data.schedule.staff;
-                                if (data.schedule.shiftsList) app.shiftsList = data.schedule.shiftsList;
-                                if (data.schedule.roles) app.roles = data.schedule.roles;
-                                loadedSomething = true;
-                            }
-                            if (loadedSomething) break;
-                        }
-                    } catch (e) {}
-                }
-
-                // 2. Probar colecciones individuales de Almacén/Ingredientes
-                const pantryColNames = ['pantry', 'ingredientes', 'almacen', 'articulos', 'materias_primas'];
-                for (let col of pantryColNames) {
-                    try {
-                        const snap = await this.db.collection(col).get();
-                        if (!snap.empty) {
-                            db.pantry = snap.docs.map(d => this.normalizePantryItem(d.data(), d.id));
-                            loadedSomething = true;
-                            console.log(`Cargados ${db.pantry.length} ingredientes desde coleccion '${col}'`);
-                            break;
-                        }
-                    } catch (e) {}
-                }
-
-                // 3. Probar colecciones individuales de Recetas/Escandallos
-                const recipeColNames = ['recipes', 'recetas', 'platos', 'escandallos', 'elaboraciones'];
-                for (let col of recipeColNames) {
-                    try {
-                        const snap = await this.db.collection(col).get();
-                        if (!snap.empty) {
-                            db.recipes = snap.docs.map(d => this.normalizeRecipeItem(d.data(), d.id));
-                            loadedSomething = true;
-                            console.log(`Cargadas ${db.recipes.length} recetas desde coleccion '${col}'`);
-                            break;
-                        }
-                    } catch (e) {}
-                }
-
-                // 4. Probar colecciones de Proveedores y Categorías
+                // 1. Probar primero el documento del tenant específico
                 try {
-                    const suppSnap = await this.db.collection('suppliers').get();
-                    if (!suppSnap.empty) {
-                        db.suppliers = suppSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-                        loadedSomething = true;
-                    }
-                } catch(e) {}
-
-                // 5. Probar colecciones de Personal / Horarios
-                const staffColNames = ['staff', 'personal', 'empleados', 'trabajadores'];
-                for (let col of staffColNames) {
-                    try {
-                        const snap = await this.db.collection(col).get();
-                        if (!snap.empty) {
-                            app.staff = snap.docs.map(d => ({ ...d.data() }));
+                    const tenantSnap = await this.db.collection('tenants').doc(tenantId).get();
+                    if (tenantSnap.exists) {
+                        const data = tenantSnap.data();
+                        if (data.chef) {
+                            db = { ...db, ...data.chef };
+                            if (data.chef.expenses && Array.isArray(data.chef.expenses)) {
+                                db.expenses = data.chef.expenses;
+                            }
                             loadedSomething = true;
-                            break;
+                        }
+                        if (data.schedule) {
+                            if (data.schedule.staff) app.staff = data.schedule.staff;
+                            if (data.schedule.shiftsList) app.shiftsList = data.schedule.shiftsList;
+                            if (data.schedule.roles) app.roles = data.schedule.roles;
+                            loadedSomething = true;
+                        }
+                    }
+                } catch(tErr) {
+                    console.warn("Could not check tenant doc:", tErr);
+                }
+
+                // 2. Si no se encontró y es Lino, migración retrocompatible desde gastro_master
+                if (!loadedSomething && tenantId === 'Calculadora-de-platos-Lino') {
+                    const masterDocNames = ['gastro_master/state', 'chef_v68/data', 'calculadora_platos/main', 'restaurante/config'];
+                    for (let path of masterDocNames) {
+                        try {
+                            const [col, docId] = path.split('/');
+                            const snap = await this.db.collection(col).doc(docId).get();
+                            if (snap.exists) {
+                                const data = snap.data();
+                                if (data.chef) { 
+                                    db = { ...db, ...data.chef }; 
+                                    if (data.chef.expenses && Array.isArray(data.chef.expenses)) {
+                                        db.expenses = data.chef.expenses;
+                                    }
+                                    loadedSomething = true; 
+                                }
+                                if (data.pantry && Array.isArray(data.pantry)) { db.pantry = data.pantry.map((p, i) => this.normalizePantryItem(p, p.id || i)); loadedSomething = true; }
+                                if (data.recipes && Array.isArray(data.recipes)) { db.recipes = data.recipes.map((r, i) => this.normalizeRecipeItem(r, r.id || i)); loadedSomething = true; }
+                                if (data.schedule) {
+                                    if (data.schedule.staff) app.staff = data.schedule.staff;
+                                    if (data.schedule.shiftsList) app.shiftsList = data.schedule.shiftsList;
+                                    if (data.schedule.roles) app.roles = data.schedule.roles;
+                                    loadedSomething = true;
+                                }
+                                if (loadedSomething) break;
+                            }
+                        } catch (e) {}
+                    }
+                }
+
+                // 3. Si el usuario es Super Admin, sincronizar el registro de empresas
+                if (window.tenantManager && tenantManager.isSuperAdmin) {
+                    try {
+                        const regSnap = await this.db.collection('tenants_registry').doc('all').get();
+                        if (regSnap.exists && Array.isArray(regSnap.data().tenants)) {
+                            tenantManager.tenants = regSnap.data().tenants;
+                            tenantManager.saveTenantsRegistry();
+                            tenantManager.updateTenantSelectorUI();
                         }
                     } catch (e) {}
                 }
-
             } else {
                 // Realtime Database
-                const snapshot = await this.db.ref('/').once('value');
-                if (snapshot.exists()) {
-                    const root = snapshot.val();
-                    if (root.gastro_master) {
-                        const data = root.gastro_master;
-                        if (data.chef) db = { ...db, ...data.chef };
-                        if (data.schedule && data.schedule.staff) app.staff = data.schedule.staff;
-                        loadedSomething = true;
-                    } else {
-                        if (root.pantry || root.ingredientes) {
-                            const rawP = root.pantry || root.ingredientes;
-                            db.pantry = Object.keys(rawP).map(k => this.normalizePantryItem(rawP[k], k));
-                            loadedSomething = true;
-                        }
-                        if (root.recipes || root.recetas || root.platos) {
-                            const rawR = root.recipes || root.recetas || root.platos;
-                            db.recipes = Object.keys(rawR).map(k => this.normalizeRecipeItem(rawR[k], k));
+                const snap = await this.db.ref('tenants/' + tenantId).once('value');
+                if (snap.exists()) {
+                    const data = snap.val();
+                    if (data.chef) db = { ...db, ...data.chef };
+                    if (data.schedule && data.schedule.staff) app.staff = data.schedule.staff;
+                    loadedSomething = true;
+                } else if (tenantId === 'Calculadora-de-platos-Lino') {
+                    const snapshot = await this.db.ref('/').once('value');
+                    if (snapshot.exists()) {
+                        const root = snapshot.val();
+                        if (root.gastro_master) {
+                            const data = root.gastro_master;
+                            if (data.chef) db = { ...db, ...data.chef };
+                            if (data.schedule && data.schedule.staff) app.staff = data.schedule.staff;
                             loadedSomething = true;
                         }
                     }
@@ -4284,16 +4782,24 @@ const firebaseSync = {
                 await saveDB();
                 app.save(true);
                 refreshUI();
+                if (window.financeModule && typeof financeModule.render === 'function') {
+                    financeModule.render();
+                }
                 updatePrimeDashboard();
-                showToast(`✅ Sincronizados ${db.pantry.length} ingredientes y ${db.recipes.length} recetas de Firebase`, "success");
+                showToast(`✅ Sincronizada base "${tenantId}" (${db.pantry.length} ingredientes, ${db.recipes.length} recetas)`, "success");
             } else {
-                if (!silent) showToast("Conexión activa con Firebase. Listo para subir y sincronizar.", "info");
+                if (!silent) showToast(`Base de datos "${tenantId}" lista en Firebase`, "info");
             }
             closeModal('firebaseModal');
         } catch (e) {
             console.error("Error al descargar de Firebase:", e);
             if (!silent) showToast("Error al descargar datos: " + e.message, "error");
         }
+    },
+
+
+getActiveTenantId() {
+        return (window.tenantManager && tenantManager.activeTenantId) ? tenantManager.activeTenantId : 'Calculadora-de-platos-Lino';
     },
 
     async pushToCloud(silent = false) {
@@ -4303,7 +4809,9 @@ const firebaseSync = {
         }
 
         sanitizeDB();
+        const tenantId = this.getActiveTenantId();
         const payload = {
+            tenantId: tenantId,
             updatedAt: new Date().toISOString(),
             chef: db,
             schedule: {
@@ -4318,24 +4826,30 @@ const firebaseSync = {
 
         try {
             if (this.dbType === 'firestore') {
-                await this.db.collection('gastro_master').doc('state').set(payload);
+                await this.db.collection('tenants').doc(tenantId).set(payload);
 
-                // Sincronizar también colecciones individuales para consultas
-                const batch = this.db.batch();
-                db.pantry.slice(0, 450).forEach(item => {
-                    const docRef = this.db.collection('pantry').doc(String(item.id));
-                    batch.set(docRef, item);
-                });
-                db.recipes.slice(0, 450).forEach(r => {
-                    const docRef = this.db.collection('recipes').doc(String(r.id));
-                    batch.set(docRef, r);
-                });
-                await batch.commit();
+                // Si es Lino, compatibilidad hacia atrás con gastro_master
+                if (tenantId === 'Calculadora-de-platos-Lino') {
+                    await this.db.collection('gastro_master').doc('state').set(payload);
+                    const batch = this.db.batch();
+                    db.pantry.slice(0, 450).forEach(item => {
+                        const docRef = this.db.collection('pantry').doc(String(item.id));
+                        batch.set(docRef, item);
+                    });
+                    db.recipes.slice(0, 450).forEach(r => {
+                        const docRef = this.db.collection('recipes').doc(String(r.id));
+                        batch.set(docRef, r);
+                    });
+                    await batch.commit();
+                }
             } else {
-                await this.db.ref('gastro_master').set(payload);
+                await this.db.ref('tenants/' + tenantId).set(payload);
+                if (tenantId === 'Calculadora-de-platos-Lino') {
+                    await this.db.ref('gastro_master').set(payload);
+                }
             }
             if (!silent) {
-                showToast("☁️ Datos subidos a Firebase correctamente", "success");
+                showToast(`☁️ Base de datos "${tenantId}" sincronizada en Firebase`, "success");
                 closeModal('firebaseModal');
             }
         } catch (err) {
@@ -4344,11 +4858,19 @@ const firebaseSync = {
         }
     },
 
+
+    realtimeUnsubscribe: null,
     listenToRealtime() {
         if (!this.isConnected || !this.db) return;
+        if (this.realtimeUnsubscribe) {
+            try { this.realtimeUnsubscribe(); } catch(e) {}
+            this.realtimeUnsubscribe = null;
+        }
+
+        const tenantId = this.getActiveTenantId();
         try {
             if (this.dbType === 'firestore') {
-                this.db.collection('gastro_master').doc('state')
+                this.realtimeUnsubscribe = this.db.collection('tenants').doc(tenantId)
                     .onSnapshot((doc) => {
                         if (doc.exists && !doc.metadata.hasPendingWrites) {
                             const data = doc.data();
@@ -4356,19 +4878,25 @@ const firebaseSync = {
                             if (data.schedule && data.schedule.staff) app.staff = data.schedule.staff;
                             sanitizeDB();
                             refreshUI();
-                            app.renderTable();
+                            if (app.renderTable) app.renderTable();
+                            if (window.financeModule && typeof financeModule.render === 'function') {
+                                financeModule.render();
+                            }
                             updatePrimeDashboard();
                         }
-                    }, (err) => console.warn("Snapshot error:", err));
+                    }, (err) => console.warn("Tenant snapshot error:", err));
             } else {
-                this.db.ref('gastro_master').on('value', (snap) => {
+                this.db.ref('tenants/' + tenantId).on('value', (snap) => {
                     if (snap.exists()) {
                         const data = snap.val();
                         if (data.chef) db = { ...db, ...data.chef };
                         if (data.schedule && data.schedule.staff) app.staff = data.schedule.staff;
                         sanitizeDB();
                         refreshUI();
-                        app.renderTable();
+                        if (app.renderTable) app.renderTable();
+                        if (window.financeModule && typeof financeModule.render === 'function') {
+                            financeModule.render();
+                        }
                         updatePrimeDashboard();
                     }
                 });
@@ -4377,6 +4905,7 @@ const firebaseSync = {
             console.warn("Realtime listener setup:", e);
         }
     }
+
 };
 
 function openFirebaseModal() {
@@ -8468,6 +8997,7 @@ const inboxModule = {
     searchQuery: '',
     quickType: 'all',
     isLoading: false,
+    syncError: null,
     connectedEmail: null,
     connectedDisplayName: null,
     emails: [],
@@ -8747,10 +9277,57 @@ const inboxModule = {
 
         if (this.isLoading) {
             container.innerHTML = `
-                <div style="padding:40px 20px; text-align:center; color:var(--text-muted);">
-                    <div style="font-size:2.5rem; animation:pulse 1.5s infinite;">🔄</div>
-                    <h4 style="margin:12px 0 4px 0; color:var(--text-main);">Sincronizando con Gmail...</h4>
-                    <p style="margin:0; font-size:0.8rem;">Descargando correos de ${this.connectedEmail || 'Google'}</p>
+                <div style="padding:48px 24px; text-align:center; color:var(--text-muted);">
+                    <div style="font-size:3rem; animation:pulse 1.5s infinite; margin-bottom:12px;">🔄</div>
+                    <h4 style="margin:0 0 6px 0; color:var(--text-main); font-size:1.1rem;">Sincronizando con Gmail...</h4>
+                    <p style="margin:0; font-size:0.85rem; color:var(--text-muted);">Descargando correos reales de <strong>${this.connectedEmail || 'Google'}</strong></p>
+                </div>
+            `;
+            return;
+        }
+
+        // DIAGNOSTIC ERROR CARD
+        if (this.syncError) {
+            let actionHtml = '';
+            if (this.syncError.type === 'API_DISABLED') {
+                actionHtml = `
+                    <div style="margin-top:16px; display:flex; flex-direction:column; gap:10px; align-items:center;">
+                        <a href="${this.syncError.helpUrl}" target="_blank" rel="noopener noreferrer" style="background:#ea4335; color:#fff; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:700; font-size:0.9rem; display:inline-flex; align-items:center; gap:8px; box-shadow:0 3px 10px rgba(234,67,53,0.35);">
+                            <span>⚡</span> Activar Gmail API en Google Cloud (1 Clic)
+                        </a>
+                        <button class="btn-secondary" onclick="inboxModule.retryLiveSync()" style="display:inline-flex; align-items:center; gap:6px; font-weight:700;">
+                            <span>🔄</span> Ya la activé, reintentar sincronizar
+                        </button>
+                    </div>
+                `;
+            } else if (this.syncError.type === 'TOKEN_EXPIRED' || this.syncError.type === 'TOKEN_MISSING') {
+                actionHtml = `
+                    <div style="margin-top:16px; display:flex; justify-content:center;">
+                        <button class="btn-primary" onclick="inboxModule.connectAnyGoogleAccount()" style="background:#10b981; border:none; padding:10px 20px; font-weight:700; border-radius:8px; display:inline-flex; align-items:center; gap:8px; box-shadow:0 3px 10px rgba(16,185,129,0.3);">
+                            <span>🔑</span> Iniciar Sesión con Google
+                        </button>
+                    </div>
+                `;
+            } else {
+                actionHtml = `
+                    <div style="margin-top:16px; display:flex; justify-content:center;">
+                        <button class="btn-secondary" onclick="inboxModule.retryLiveSync()" style="display:inline-flex; align-items:center; gap:6px;">
+                            <span>🔄</span> Reintentar
+                        </button>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = `
+                <div style="margin:20px; padding:24px; background:rgba(239,68,68,0.06); border:1.5px solid rgba(239,68,68,0.35); border-radius:12px; text-align:center;">
+                    <div style="font-size:2.8rem; margin-bottom:10px;">⚠️</div>
+                    <h4 style="margin:0 0 8px 0; color:#dc2626; font-size:1.1rem; font-weight:800;">
+                        ${this.syncError.title}
+                    </h4>
+                    <p style="margin:0; font-size:0.85rem; color:var(--text-main); line-height:1.5;">
+                        ${this.syncError.message}
+                    </p>
+                    ${actionHtml}
                 </div>
             `;
             return;
@@ -8780,8 +9357,10 @@ const inboxModule = {
 
         if (filtered.length === 0) {
             container.innerHTML = `
-                <div style="padding:32px 20px; text-align:center; color:var(--text-muted); font-size:0.85rem;">
-                    🔍 No se encontraron correos con los filtros actuales.
+                <div style="padding:40px 20px; text-align:center; color:var(--text-muted); font-size:0.85rem;">
+                    <div style="font-size:2.2rem; margin-bottom:8px;">📭</div>
+                    <h4 style="margin:0 0 4px 0; color:var(--text-main);">Bandeja al día</h4>
+                    <p style="margin:0; font-size:0.82rem;">No hay correos con los filtros seleccionados en ${this.connectedEmail || 'tu bandeja'}.</p>
                 </div>
             `;
             return;
@@ -9167,6 +9746,120 @@ const inboxModule = {
         }
     },
 
+    async retryLiveSync() {
+        this.syncError = null;
+        this.isLoading = true;
+        this.renderEmailList();
+        try {
+            await googleServicesManager.gmail.fetchLiveEmails();
+        } catch(e) {
+            console.error(e);
+        } finally {
+            this.isLoading = false;
+            this.render();
+        }
+    },
+
+    async runDiagnostic() {
+        openModal('gmailDiagnosticModal');
+        const container = document.getElementById('gmailDiagnosticResults');
+        if (!container) return;
+
+        container.innerHTML = `
+            <div style="text-align:center; padding:25px;">
+                <div style="font-size:2.5rem; animation:pulse 1.5s infinite;">🔄</div>
+                <h4 style="margin:12px 0 0 0; color:var(--text-main);">Analizando conexión con Google y Gmail API...</h4>
+            </div>
+        `;
+
+        const authUser = (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) ? firebase.auth().currentUser : null;
+        const activeEmail = this.connectedEmail || (authUser ? authUser.email : null) || 'No configurado';
+        const token = (googleServicesManager.gmail && googleServicesManager.gmail.accessToken) || sessionStorage.getItem('gsp_google_access_token') || localStorage.getItem('gsp_google_access_token');
+
+        let tokenStatusHtml = '';
+        if (token) {
+            tokenStatusHtml = `<span style="color:#10b981; font-weight:700;">🟢 Token presente y activo</span>`;
+        } else {
+            tokenStatusHtml = `<span style="color:#ef4444; font-weight:700;">🔴 No se encontró token OAuth</span>`;
+        }
+
+        let apiStatusHtml = '';
+        let actionBtnHtml = '';
+
+        if (!token) {
+            apiStatusHtml = `<span style="color:#f59e0b; font-weight:600;">⚠️ Requiere autenticación con Google para testear API</span>`;
+            actionBtnHtml = `
+                <button class="btn-primary" onclick="closeModal('gmailDiagnosticModal'); inboxModule.connectAnyGoogleAccount();" style="background:#10b981; padding:8px 18px; font-weight:700;">
+                    🔑 Conectar con Google Ahora
+                </button>
+            `;
+        } else {
+            try {
+                const profileRes = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/profile', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+
+                if (profileRes.ok) {
+                    const prof = await profileRes.json();
+                    apiStatusHtml = `<span style="color:#10b981; font-weight:700;">🟢 Gmail API 100% Activa y Respondiendo</span> (Bandeja: ${prof.emailAddress}, Mensajes totales: ${prof.messagesTotal || 0})`;
+                    actionBtnHtml = `
+                        <button class="btn-primary" onclick="closeModal('gmailDiagnosticModal'); inboxModule.retryLiveSync();" style="background:#4f46e5; padding:8px 18px; font-weight:700;">
+                            📥 Cargar Correos Reales Ahora
+                        </button>
+                    `;
+                } else {
+                    let errData = {};
+                    try { errData = await profileRes.json(); } catch(e) {}
+                    const errMsg = (errData.error && errData.error.message) ? errData.error.message : ('Error HTTP ' + profileRes.status);
+
+                    if (profileRes.status === 403 || errMsg.includes('has not been used') || errMsg.includes('disabled')) {
+                        apiStatusHtml = `<span style="color:#ef4444; font-weight:800;">🔴 Gmail API Deshabilitada en Google Cloud (Error 403)</span><br><span style="font-size:0.8rem; color:var(--text-muted);">${errMsg}</span>`;
+                        actionBtnHtml = `
+                            <a href="https://console.cloud.google.com/apis/library/gmail.googleapis.com?project=calculadora-de-platos" target="_blank" rel="noopener noreferrer" style="background:#ea4335; color:#fff; padding:10px 18px; border-radius:8px; text-decoration:none; font-weight:700; font-size:0.88rem; display:inline-flex; align-items:center; gap:8px; box-shadow:0 3px 8px rgba(234,67,53,0.3);">
+                                <span>⚡</span> Activar Gmail API en Google Cloud (1 Clic)
+                            </a>
+                        `;
+                    } else if (profileRes.status === 401) {
+                        apiStatusHtml = `<span style="color:#ef4444; font-weight:800;">🔴 Token de Acceso Expirado (Error 401)</span>`;
+                        actionBtnHtml = `
+                            <button class="btn-primary" onclick="closeModal('gmailDiagnosticModal'); inboxModule.connectAnyGoogleAccount();" style="background:#10b981; padding:8px 18px; font-weight:700;">
+                                🔑 Reconectar Cuenta de Google
+                            </button>
+                        `;
+                    } else {
+                        apiStatusHtml = `<span style="color:#ef4444; font-weight:700;">🔴 Error al conectar: ${errMsg}</span>`;
+                    }
+                }
+            } catch (err) {
+                apiStatusHtml = `<span style="color:#ef4444; font-weight:700;">🔴 Error de red: ${err.message}</span>`;
+            }
+        }
+
+        container.innerHTML = `
+            <div style="display:flex; flex-direction:column; gap:16px;">
+                <div style="border:1px solid var(--border); border-radius:8px; padding:14px; background:var(--surface-subtle);">
+                    <div style="font-weight:700; font-size:0.85rem; color:var(--text-muted); margin-bottom:4px;">1. CUENTA GOOGLE CONECTADA</div>
+                    <div style="font-size:0.95rem; font-weight:700; color:var(--text-main);">${activeEmail}</div>
+                </div>
+
+                <div style="border:1px solid var(--border); border-radius:8px; padding:14px; background:var(--surface-subtle);">
+                    <div style="font-weight:700; font-size:0.85rem; color:var(--text-muted); margin-bottom:4px;">2. ESTADO DEL TOKEN DE ACCESO (OAUTH)</div>
+                    <div style="font-size:0.9rem; margin-top:2px;">${tokenStatusHtml}</div>
+                </div>
+
+                <div style="border:1px solid var(--border); border-radius:8px; padding:14px; background:var(--surface-subtle);">
+                    <div style="font-weight:700; font-size:0.85rem; color:var(--text-muted); margin-bottom:4px;">3. PRUEBA EN VIVO: GMAIL REST API (GOOGLE CLOUD)</div>
+                    <div style="font-size:0.88rem; margin-top:4px; line-height:1.4;">${apiStatusHtml}</div>
+                </div>
+
+                <div style="margin-top:10px; display:flex; justify-content:center;">
+                    ${actionBtnHtml}
+                </div>
+            </div>
+        `;
+    },
+
+
     render() {
         this.updateBadgeCounts();
         this.updateAccountDisplayUI();
@@ -9209,7 +9902,18 @@ const googleServicesManager = {
 
         // FETCH REAL EMAILS FROM GMAIL REST API
         async fetchLiveEmails() {
-            if (!this.accessToken) return;
+            if (!this.accessToken) {
+                if (window.inboxModule) {
+                    inboxModule.syncError = {
+                        type: 'TOKEN_MISSING',
+                        code: 401,
+                        title: 'Conexión de Google Requerida',
+                        message: 'Pulsa "Conectar con Google / Gmail" para autorizar el acceso y visualizar tus correos reales.'
+                    };
+                    inboxModule.render();
+                }
+                return;
+            }
 
             const activeEmail = (window.inboxModule && inboxModule.connectedEmail) ? inboxModule.connectedEmail : 'Gmail';
             showToast(`Descargando correos de ${activeEmail}...`, "info");
@@ -9221,8 +9925,48 @@ const googleServicesManager = {
                 });
 
                 if (!listRes.ok) {
-                    const err = await listRes.json();
-                    throw new Error(err.error ? err.error.message : 'Error al conectar con Gmail API');
+                    let errData = {};
+                    try { errData = await listRes.json(); } catch(e) {}
+                    const errMsg = (errData.error && errData.error.message) ? errData.error.message : ('Error HTTP ' + listRes.status);
+
+                    if (listRes.status === 403 || errMsg.includes('has not been used') || errMsg.includes('disabled')) {
+                        if (window.inboxModule) {
+                            inboxModule.syncError = {
+                                type: 'API_DISABLED',
+                                code: 403,
+                                title: 'Gmail API Deshabilitada en Google Cloud',
+                                message: 'La API de Gmail está deshabilitada en tu proyecto "calculadora-de-platos". Debes activarla en Google Cloud Console en 1 clic para que GastroSuitePro pueda leer tus correos en vivo.',
+                                helpUrl: 'https://console.cloud.google.com/apis/library/gmail.googleapis.com?project=calculadora-de-platos'
+                            };
+                            inboxModule.render();
+                        }
+                        showToast("⚠️ Activa la API de Gmail en Google Cloud (ver botón en pantalla)", "warning");
+                        return;
+                    } else if (listRes.status === 401) {
+                        if (window.inboxModule) {
+                            inboxModule.syncError = {
+                                type: 'TOKEN_EXPIRED',
+                                code: 401,
+                                title: 'Sesión de Google Expirada',
+                                message: 'Tu token de acceso a Gmail ha caducado. Vuelve a iniciar sesión para renovar los permisos de sincronización.'
+                            };
+                            inboxModule.render();
+                        }
+                        showToast("Sesión de Google caducada. Por favor reconecta.", "warning");
+                        return;
+                    } else {
+                        if (window.inboxModule) {
+                            inboxModule.syncError = {
+                                type: 'UNKNOWN',
+                                code: listRes.status,
+                                title: 'Aviso de Conexión con Gmail',
+                                message: errMsg
+                            };
+                            inboxModule.render();
+                        }
+                        showToast("Aviso Gmail: " + errMsg, "warning");
+                        return;
+                    }
                 }
 
                 const listData = await listRes.json();
@@ -9230,6 +9974,7 @@ const googleServicesManager = {
 
                 if (msgRefs.length === 0) {
                     if (window.inboxModule) {
+                        inboxModule.syncError = null;
                         inboxModule.emails = [];
                         inboxModule.render();
                     }
@@ -9247,6 +9992,7 @@ const googleServicesManager = {
                 const parsedEmails = rawMessages.map(msg => this.parseGmailMessage(msg));
 
                 if (window.inboxModule) {
+                    inboxModule.syncError = null;
                     inboxModule.emails = parsedEmails;
                     localStorage.setItem('gsp_real_emails_' + (inboxModule.connectedEmail || 'default'), JSON.stringify(parsedEmails));
                     inboxModule.render();
@@ -9255,9 +10001,19 @@ const googleServicesManager = {
                 showToast(`✅ ${parsedEmails.length} correos reales sincronizados desde Gmail`, "success");
             } catch(e) {
                 console.error("Error fetching live Gmail messages:", e);
+                if (window.inboxModule) {
+                    inboxModule.syncError = {
+                        type: 'NETWORK_ERROR',
+                        code: 0,
+                        title: 'Error de Red o Conexión',
+                        message: e.message
+                    };
+                    inboxModule.render();
+                }
                 showToast("Error de sincronización: " + e.message, "danger");
             }
         },
+
 
         parseGmailMessage(msg) {
             const headers = (msg.payload && msg.payload.headers) || [];
