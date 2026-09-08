@@ -2357,9 +2357,9 @@
             <div style="display:flex; align-items:center; gap:10px;">
                 <div id="gmailStatusDot" style="width:12px; height:12px; border-radius:50%; background:#10b981;"></div>
                 <div>
-                    <strong id="gmailStatusTitle">Conectado con cuenta Google</strong>
+                    <strong id="gmailStatusTitle">Vinculado con lino.brasserie@gmail.com</strong>
                     <div style="font-size:0.8rem; color:var(--text-muted);" id="gmailStatusSubtitle">
-                        Buscando adjuntos de proveedores: <code>has:attachment (factura OR albarán OR entrega)</code>
+                        Buscando albaranes en <strong>lino.brasserie@gmail.com</strong>: <code>has:attachment (factura OR albarán OR entrega)</code>
                     </div>
                 </div>
             </div>
@@ -2553,7 +2553,7 @@ const authManager = {
 
     async handleUserAuthenticated(user) {
         const email = (user.email || '').toLowerCase().trim();
-        const isOwner = (email === this.OWNER_EMAIL.toLowerCase());
+        const isOwner = (email === this.OWNER_EMAIL.toLowerCase() || email === 'lino.brasserie@gmail.com');
         const isWhitelisted = this.accessConfig.guestEmails.some(e => e.toLowerCase().trim() === email);
 
         if (isOwner) {
@@ -6373,7 +6373,7 @@ const financeModule = {
    ========================================================================== */
 const gmailSyncModule = {
     isConnected: true,
-    userEmail: 'empresa@gastrosuite.pro',
+    userEmail: 'lino.brasserie@gmail.com',
     cachedEmails: null,
 
     // Initial supplier invoice emails from company suppliers
@@ -6535,7 +6535,7 @@ const gmailSyncModule = {
 
     openDirectGmailSearch() {
         const query = encodeURIComponent('has:attachment (factura OR albaran OR albarán OR entrega)');
-        window.open('https://mail.google.com/mail/u/0/#search/' + query, '_blank');
+        window.open('https://mail.google.com/mail/u/?authuser=lino.brasserie@gmail.com#search/' + query, '_blank');
     },
 
     processEmailAttachment(emailId) {
