@@ -52,18 +52,18 @@ export class GmailClient {
     /**
      * Decodifica cadenas Base64URL devueltas por la API de Gmail a binario Uint8Array
      */
-    private base64UrlToUint8Array(base64url: string): Uint8Array {
-        let base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
-        while (base64.length % 4 !== 0) {
-            base64 += '=';
+    private base64UrlToUint8Array(base64UrlData: string): Uint8Array {
+        let base64 = base64UrlData.replace(/-/g, '+').replace(/_/g, '/');
+        const pad = base64.length % 4;
+        if (pad) {
+            base64 += '='.repeat(4 - pad);
         }
-        const binaryString = atob(base64);
-        const len = binaryString.length;
-        const bytes = new Uint8Array(len);
-        for (let i = 0; i < len; i++) {
-            bytes[i] = binaryString.charCodeAt(i);
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+        for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
         }
-        return bytes;
+        return outputArray;
     }
 
     private extractHeader(headers: Array<{ name: string; value: string }>, name: string): string {
