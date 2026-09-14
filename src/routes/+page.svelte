@@ -23,22 +23,16 @@
 
 <div class="page-container">
     <div class="intro-card">
-        <h2>⚡ Centro de Recepción: Gmail API + OCR Inteligente</h2>
+        <h2>⚡ Centro de Recepción y Escaneo de Albaranes</h2>
         <p>
-            Arrastra facturas o albaranes desde tu ordenador, o selecciona adjuntos directamente desde el buzón de Gmail.
-            Los documentos se procesan en el cliente mediante PDF.js y se guardan automáticamente en la base de datos de 
-            <strong>{$tenantStore.activeTenantId}</strong>.
+            Arrastra facturas o albaranes PDF directamente desde la pestaña de <strong>Gmail</strong>, WhatsApp Web o tu ordenador.
+            También puedes pulsar <kbd>Ctrl</kbd> + <kbd>V</kbd> para pegar capturas de pantalla. El motor cliente (PDF.js) procesa los datos en vivo y reconcilia los precios en <strong>{$tenantStore.activeTenantId}</strong>.
         </p>
     </div>
 
-    <!-- MAIN TWO-COLUMN WORKSPACE -->
+    <!-- MAIN WORKSPACE -->
     <div class="workspace-grid">
-        <!-- COL 1: MAILBOX GMAIL API -->
-        <div class="col-mailbox">
-            <Mailbox on:selectAttachment={handleAttachmentFromMailbox} />
-        </div>
-
-        <!-- COL 2: DROPZONE & REALTIME OCR RECONCILIATION -->
+        <!-- COL 1: DROPZONE & REALTIME OCR RECONCILIATION -->
         <div class="col-scanner">
             <Dropzone 
                 bind:this={dropzoneRef} 
