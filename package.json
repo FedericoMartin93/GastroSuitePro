@@ -1,11 +1,25 @@
 {
   "name": "gastro-suite-pro",
-  "version": "1.0.0",
-  "description": "Suite integral gastronómica: Escandallos, Control de Almacén, Cuadrantes de Turnos, Prime Cost y Seguridad por PIN.",
-  "main": "index.html",
+  "version": "2.0.0",
+  "description": "Suite integral gastronómica: Escandallos, Control de Almacén, Cuadrantes de Turnos, Prime Cost, Gmail API y Multi-Tenant.",
+  "type": "module",
   "scripts": {
-    "start": "npx serve .",
-    "open": "start index.html"
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-static": "^3.0.6",
+    "@sveltejs/kit": "^2.16.1",
+    "@sveltejs/vite-plugin-svelte": "^4.0.4",
+    "svelte": "^5.16.0",
+    "svelte-check": "^4.1.4",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.7"
+  },
+  "dependencies": {
+    "firebase": "^10.14.1"
   },
   "keywords": [
     "restauracion",
@@ -14,8 +28,10 @@
     "horarios",
     "turnos",
     "prime-cost",
-    "chef-manager"
+    "gmail-api",
+    "sveltekit",
+    "multi-tenant"
   ],
-  "author": "GastroSuitePro",
+  "author": "Federico Martin / GastroSuitePro",
   "license": "MIT"
 }
