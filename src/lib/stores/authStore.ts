@@ -53,11 +53,8 @@ function createAuthStore() {
         async loginWithGoogle() {
             update(s => ({ ...s, loading: true, error: null }));
             try {
-                // Instanciar GoogleAuthProvider y configurar scopes explícitos de Gmail API
+                // Proveedor oficial de Google (sin permisos invasivos de Gmail ni bucles de consentimiento)
                 const provider = new GoogleAuthProvider();
-                provider.addScope('https://www.googleapis.com/auth/gmail.readonly');
-                provider.addScope('https://www.googleapis.com/auth/gmail.modify');
-                provider.addScope('https://www.googleapis.com/auth/gmail.send');
                 provider.setCustomParameters({ prompt: 'select_account' });
 
                 const result = await signInWithPopup(auth, provider);
@@ -65,12 +62,6 @@ function createAuthStore() {
                 const email = (user.email || '').toLowerCase().trim();
                 const isSuperAdmin = (email === SUPER_ADMIN_EMAIL);
                 const role: UserRole = isSuperAdmin ? 'super_admin' : 'owner';
-
-                // Capturar y guardar token OAuth oficial de Google (Firebase Modular v10)
-                const credential = GoogleAuthProvider.credentialFromResult(result);
-                if (credential && credential.accessToken) {
-                    gmailStore.setAccessToken(credential.accessToken, email);
-                }
 
                 update(s => ({ ...s, user, role, loading: false }));
                 return user;
