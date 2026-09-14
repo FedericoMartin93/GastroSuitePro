@@ -1,12 +1,47 @@
-﻿rules_version = '2';
+rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Seguridad GastroSuitePro:
-    // Propietario (fefomartin00@gmail.com) tiene control total de lectura y escritura
-    // Invitados autenticados solo pueden leer
+
+    // Funciones auxiliares
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isSuperAdmin() {
+      return isAuthenticated() && request.auth.token.email.lower() == 'fefomartin00@gmail.com';
+    }
+
+    // 1. Reglas Multi-Tenant para las bases de datos de restaurantes
+    match /tenants/{tenantId} {
+      // Lectura permitida si está autenticado o si es el tenant de demostración predeterminado (Lino)
+      allow read: if isAuthenticated() || tenantId == 'Calculadora-de-platos-Lino';
+
+      // Escritura:
+      // - Super Admin (fefomartin00@gmail.com) en cualquier empresa
+      // - Lino Brasserie (lino.brasserie@gmail.com) en Calculadora-de-platos-Lino
+      // - El dueño del tenant según su email registrado
+      allow write: if isSuperAdmin()
+        || (isAuthenticated() && tenantId == 'Calculadora-de-platos-Lino' && request.auth.token.email.lower() == 'lino.brasserie@gmail.com')
+        || (isAuthenticated() && resource != null && resource.data.clientEmail.lower() == request.auth.token.email.lower());
+
+      // Subcolecciones dentro de cada tenant
+      match /{subcollection=**} {
+        allow read: if isAuthenticated() || tenantId == 'Calculadora-de-platos-Lino';
+        allow write: if isSuperAdmin()
+          || (isAuthenticated() && tenantId == 'Calculadora-de-platos-Lino' && request.auth.token.email.lower() == 'lino.brasserie@gmail.com');
+      }
+    }
+
+    // 2. Registro de empresas (necesario para el selector de tenants)
+    match /tenants_registry/{document=**} {
+      allow read: if true;
+      allow write: if isSuperAdmin();
+    }
+
+    // 3. Colecciones maestras (gastro_master, etc.)
     match /{document=**} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.token.email.lower() == 'fefomartin00@gmail.com';
+      allow read: if isAuthenticated();
+      allow write: if isSuperAdmin();
     }
   }
 }
