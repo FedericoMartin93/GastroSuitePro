@@ -3,7 +3,7 @@
     import { tenantStore } from '$lib/stores/tenantStore';
     import { documentParser, type ParsedDocumentResult } from '$lib/legacy/documentParser';
     import { db } from '$lib/firebase/client';
-    import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+    import { doc, setDoc, arrayUnion } from 'firebase/firestore';
 
     const dispatch = createEventDispatcher<{
         processing: { file: File };
@@ -72,20 +72,18 @@
             const activeTenantId = $tenantStore.activeTenantId;
             try {
                 const tenantRef = doc(db, 'tenants', activeTenantId);
-                await updateDoc(tenantRef, {
-                    'chef.expenses': arrayUnion({
-                        id: Date.now(),
-                        invoiceNumber: parsedData.invoiceNumber || `DOC-${Date.now()}`,
-                        supplierName: parsedData.supplierName || 'Proveedor General',
-                        date: parsedData.date || new Date().toISOString().split('T')[0],
-                        totalAmount: parsedData.totalAmount || 0,
-                        itemsCount: parsedData.items ? parsedData.items.length : 0,
-                        source: 'ocr_scanner',
-                        fileName: parsedData.fileName,
-                        createdAt: new Date().toISOString()
-                    }),
-                    updatedAt: new Date().toISOString()
-                });
+                await setDoc(tenantRef, {
+                    chef: {
+                        expenses: arrayUnion({
+                            id: Date.now(),
+                            invoiceNumber: parsedData.invoiceNumber,
+                            supplierName: parsedData.supplierName,
+                            totalAmount: parsedData.totalAmount,
+                            itemsCount: parsedData.items.length,
+                            createdAt: new Date().toISOString()
+                        })
+                    }
+                }, { merge: true });
             } catch (fsErr) {
                 console.warn('[Dropzone] Aviso al guardar en Firestore (continuando localmente):', fsErr);
             }
