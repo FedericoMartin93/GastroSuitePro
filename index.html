@@ -4042,25 +4042,8 @@ const authManager = {
         try {
             const auth = this.ensureFirebase();
             const provider = new firebase.auth.GoogleAuthProvider();
-            provider.addScope('https://www.googleapis.com/auth/gmail.modify');
-            provider.addScope('https://www.googleapis.com/auth/gmail.send');
             provider.setCustomParameters({ prompt: 'select_account' });
-            const result = await auth.signInWithPopup(provider);
-            if (result && result.credential && result.credential.accessToken) {
-                const token = result.credential.accessToken;
-                sessionStorage.setItem('gsp_google_access_token', token);
-                localStorage.setItem('gsp_google_access_token', token);
-                if (result.user && result.user.email) {
-                    localStorage.setItem('gsp_active_gmail_account', result.user.email);
-                }
-                if (window.googleServicesManager && googleServicesManager.gmail) {
-                    googleServicesManager.gmail.accessToken = token;
-                    googleServicesManager.gmail.isConnected = true;
-                }
-                if (window.inboxModule && typeof inboxModule.onGmailConnected === 'function') {
-                    inboxModule.onGmailConnected();
-                }
-            }
+            await auth.signInWithPopup(provider);
 
         } catch (err) {
             console.error("Google Auth error:", err);
@@ -9052,24 +9035,20 @@ const inboxModule = {
         this.setConnectedAccount(user.email, user.displayName, token);
     },
 
-    // CONNECT WITH ANY GOOGLE / GMAIL ACCOUNT VIA POPUP
+    // CONNECT WITH ANY GOOGLE ACCOUNT VIA POPUP (CLEAN AUTH)
     async connectAnyGoogleAccount() {
         showToast("Abriendo selector oficial de cuentas de Google...", "info");
         try {
             const auth = (window.authManager && authManager.ensureFirebase) ? authManager.ensureFirebase() : firebase.auth();
             const provider = new firebase.auth.GoogleAuthProvider();
-            provider.addScope('https://www.googleapis.com/auth/gmail.modify');
-            provider.addScope('https://www.googleapis.com/auth/gmail.send');
             provider.setCustomParameters({ prompt: 'select_account' });
 
             const result = await auth.signInWithPopup(provider);
             if (result && result.user) {
                 const email = result.user.email;
                 const displayName = result.user.displayName || email.split('@')[0];
-                const token = result.credential ? result.credential.accessToken : null;
-                
-                this.setConnectedAccount(email, displayName, token);
-                showToast("🟢 Conectado con éxito: " + email, "success");
+                this.setConnectedAccount(email, displayName, null);
+                showToast("🟢 Sesión iniciada con éxito: " + email, "success");
             }
         } catch(err) {
             console.error("Google connection error:", err);
@@ -9732,7 +9711,7 @@ const inboxModule = {
 
     async syncWithGmailLive() {
         if (!googleServicesManager.gmail.accessToken) {
-            return this.connectAnyGoogleAccount();
+            return;
         }
 
         this.isLoading = true;
@@ -9742,7 +9721,7 @@ const inboxModule = {
             await googleServicesManager.gmail.fetchLiveEmails();
         } catch(err) {
             console.error("Error in syncWithGmailLive:", err);
-            showToast("Error al sincronizar con Gmail: " + err.message, "danger");
+            showToast("Aviso: " + err.message, "warning");
         } finally {
             this.isLoading = false;
             this.render();
@@ -9751,10 +9730,10 @@ const inboxModule = {
 
     refresh() {
         if (googleServicesManager.gmail.accessToken) {
-            showToast("Consultando nuevos correos reales...", "info");
+            showToast("Consultando correos...", "info");
             this.syncWithGmailLive();
         } else {
-            this.connectAnyGoogleAccount();
+            financeModule.openScanModal();
         }
     },
 
