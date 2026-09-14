@@ -57,6 +57,53 @@ function createGmailStore() {
             update(s => ({ ...s, syncError: error, isLoading: false }));
         },
 
+        /**
+         * Inicializa y solicita el Token OAuth mediante Google Identity Services (GIS) initTokenClient
+         */
+        requestGoogleAccessToken(clientId?: string, hintEmail?: string) {
+            if (!isBrowser) return;
+
+            // Verificar si el script de Google Identity Services está cargado en app.html
+            const googleObj = (window as any).google;
+            if (!googleObj || !googleObj.accounts || !googleObj.accounts.oauth2) {
+                console.warn('[gmailStore] GIS SDK (google.accounts.oauth2) no detectado aún en window.');
+                return;
+            }
+
+            const activeClientId = clientId 
+                || localStorage.getItem('gsp_google_client_id') 
+                || '999617852679-0.apps.googleusercontent.com';
+
+            try {
+                const tokenClient = googleObj.accounts.oauth2.initTokenClient({
+                    client_id: activeClientId,
+                    scope: 'https://www.googleapis.com/auth/gmail.modify https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.send',
+                    hint: hintEmail || localStorage.getItem('gsp_active_gmail_account') || '',
+                    callback: (tokenResponse: any) => {
+                        if (tokenResponse && tokenResponse.access_token) {
+                            const email = hintEmail || localStorage.getItem('gsp_active_gmail_account') || 'lino.brasserie@gmail.com';
+                            this.setAccessToken(tokenResponse.access_token, email);
+                        }
+                    },
+                    error_callback: (err: any) => {
+                        console.error('[GIS initTokenClient Error]:', err);
+                        update(s => ({
+                            ...s,
+                            syncError: {
+                                type: 'TOKEN_EXPIRED',
+                                title: 'Error de Autorización Google (GIS)',
+                                message: err.message || 'No se pudo obtener el token OAuth.'
+                            }
+                        }));
+                    }
+                });
+
+                tokenClient.requestAccessToken({ prompt: 'consent' });
+            } catch (err: any) {
+                console.error('[gmailStore] Error instanciando initTokenClient:', err);
+            }
+        },
+
         clear() {
             if (isBrowser) {
                 sessionStorage.removeItem('gsp_google_access_token');
