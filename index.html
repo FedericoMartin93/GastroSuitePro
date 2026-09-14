@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍳</text></svg>">
     <title>GastroSuitePro - Gestión Integral de Restauración</title>
     
     <!-- Google Fonts -->
@@ -4710,7 +4712,11 @@ const firebaseSync = {
                         }
                     }
                 } catch(tErr) {
-                    console.warn("Could not check tenant doc:", tErr);
+                    if (tErr && (tErr.code === 'permission-denied' || (tErr.message && tErr.message.includes('insufficient permissions')))) {
+                        console.info("ℹ️ Firestore: Modo inicial sin sesión. Se sincronizará al iniciar sesión con Google.");
+                    } else {
+                        console.warn("Could not check tenant doc:", tErr);
+                    }
                 }
 
                 // 2. Si no se encontró y es Lino, migración retrocompatible desde gastro_master
@@ -4884,7 +4890,13 @@ getActiveTenantId() {
                             }
                             updatePrimeDashboard();
                         }
-                    }, (err) => console.warn("Tenant snapshot error:", err));
+                    }, (err) => {
+                        if (err && (err.code === 'permission-denied' || (err.message && err.message.includes('insufficient permissions')))) {
+                            console.info("ℹ️ Firestore Realtime: Esperando inicio de sesión para abrir el canal de datos.");
+                        } else {
+                            console.warn("Tenant snapshot error:", err);
+                        }
+                    });
             } else {
                 this.db.ref('tenants/' + tenantId).on('value', (snap) => {
                     if (snap.exists()) {
