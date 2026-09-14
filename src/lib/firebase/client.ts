@@ -19,9 +19,4 @@ export const app: FirebaseApp = getApps().length === 0
 export const db: Firestore = getFirestore(app);
 export const auth: Auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
-
-// Request full Gmail and Identity scopes by default
-googleProvider.addScope('https://www.googleapis.com/auth/gmail.modify');
-googleProvider.addScope('https://www.googleapis.com/auth/gmail.send');
-googleProvider.addScope('https://www.googleapis.com/auth/gmail.readonly');
 googleProvider.setCustomParameters({ prompt: 'select_account' });
