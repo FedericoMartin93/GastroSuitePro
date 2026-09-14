@@ -47,6 +47,20 @@
         }
     }
 
+    function handlePaste(e: ClipboardEvent) {
+        if (!e.clipboardData || !e.clipboardData.items) return;
+        for (let i = 0; i < e.clipboardData.items.length; i++) {
+            const item = e.clipboardData.items[i];
+            if (item.type.includes('image') || item.type === 'application/pdf') {
+                const file = item.getAsFile();
+                if (file) {
+                    processIncomingFile(file);
+                    break;
+                }
+            }
+        }
+    }
+
     /**
      * FUNCIÓN PRINCIPAL EXPORTADA:
      * Puede invocarse tanto desde el Drop del usuario como programáticamente
@@ -101,6 +115,8 @@
     }
 </script>
 
+<svelte:window on:paste={handlePaste} />
+
 <div 
     class="dropzone-container"
     class:dragging={isDragging}
@@ -140,7 +156,7 @@
             </div>
             <h3>Arrastra aquí facturas o albaranes</h3>
             <p class="desc">
-                Suelta archivos <strong>PDF o imágenes</strong> desde tu ordenador, o pulsa "Escanear Albarán" en los correos de Gmail.
+                Suelta archivos <strong>PDF o imágenes</strong> arrastrándolos directamente desde la pestaña de <strong>Gmail</strong>, WhatsApp o tu ordenador. También puedes pulsar <strong>Ctrl + V</strong> para pegar capturas.
             </p>
             <button type="button" class="btn-browse">
                 Explorar Archivos Locales
