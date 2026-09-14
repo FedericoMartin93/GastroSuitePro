@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import { auth, googleProvider } from '$lib/firebase/client';
-import { onAuthStateChanged, signInWithPopup, signOut, type User } from 'firebase/auth';
+import { onAuthStateChanged, signInWithPopup, signOut, GoogleAuthProvider, type User } from 'firebase/auth';
 import { gmailStore } from './gmailStore';
 import { tenantStore } from './tenantStore';
 
@@ -59,9 +59,8 @@ function createAuthStore() {
                 const isSuperAdmin = (email === SUPER_ADMIN_EMAIL);
                 const role: UserRole = isSuperAdmin ? 'super_admin' : 'owner';
 
-                // Capturar y guardar token OAuth si está disponible
-                // @ts-ignore - credential is typed on UserCredential
-                const credential = result.credential;
+                // Capturar y guardar token OAuth oficial de Google (Firebase Modular v10)
+                const credential = GoogleAuthProvider.credentialFromResult(result);
                 if (credential && credential.accessToken) {
                     gmailStore.setAccessToken(credential.accessToken, email);
                 }
