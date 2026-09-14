@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import { auth, googleProvider } from '$lib/firebase/client';
+import { auth } from '$lib/firebase/client';
 import { onAuthStateChanged, signInWithPopup, signOut, GoogleAuthProvider, type User } from 'firebase/auth';
 import { gmailStore } from './gmailStore';
 import { tenantStore } from './tenantStore';
@@ -53,7 +53,14 @@ function createAuthStore() {
         async loginWithGoogle() {
             update(s => ({ ...s, loading: true, error: null }));
             try {
-                const result = await signInWithPopup(auth, googleProvider);
+                // Instanciar GoogleAuthProvider y configurar scopes explícitos de Gmail API
+                const provider = new GoogleAuthProvider();
+                provider.addScope('https://www.googleapis.com/auth/gmail.readonly');
+                provider.addScope('https://www.googleapis.com/auth/gmail.modify');
+                provider.addScope('https://www.googleapis.com/auth/gmail.send');
+                provider.setCustomParameters({ prompt: 'select_account' });
+
+                const result = await signInWithPopup(auth, provider);
                 const user = result.user;
                 const email = (user.email || '').toLowerCase().trim();
                 const isSuperAdmin = (email === SUPER_ADMIN_EMAIL);
